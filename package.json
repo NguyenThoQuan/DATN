@@ -1,0 +1,10 @@
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm run start --prefix main\" \"npm run start:standalone --prefix navbarR\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
