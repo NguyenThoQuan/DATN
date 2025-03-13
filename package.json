@@ -2,9 +2,10 @@
   "name": "my-project",
   "version": "1.0.0",
   "scripts": {
-    "start": "concurrently \"npm run start --prefix main\" \"npm run start:standalone --prefix navbarR\""
+    "start": "concurrently \"npm run start --prefix main\" \"npm run start:standalone --prefix navbarR\" \"npm run serve:standalone --prefix home-v\""
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "postcss": "^8.5.3"
   }
 }

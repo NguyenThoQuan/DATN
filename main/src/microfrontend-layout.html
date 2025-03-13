@@ -1,11 +1,8 @@
 <single-spa-router>
-  <div class="base">
-    <div>
-      <application name="@mfe/navbarR"></application>
-    </div>
-
-    <main class="navigation">
-      <route path="/"></route>
-    </main>
-  </div>
+  <div class="navigation"><application name="@mfe/navbarR"></application></div>
+  <main>
+    <route path="/">
+      <application name="@mfe/home-v"></application>
+    </route>
+  </main>
 </single-spa-router>
