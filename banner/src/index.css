@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@keyframes bounce-slow {
+
+    0%,
+    100% {
+        transform: translateY(-50px);
+    }
+
+    50% {
+        transform: translateY(-70px);
+    }
+}
+
+.animate-bounce-slow {
+    animation: bounce-slow 3s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(-10px, -10px);
+    }
+}
+
+@keyframes float-reverse {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(10px, 10px);
+    }
+}
+
+@keyframes float-slow {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(5px, -15px);
+    }
+}
+
+.animate-float {
+    animation: float 5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+    animation: float-reverse 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+    animation: float-slow 8s ease-in-out infinite;
+}
+
+@keyframes ripple {
+    0% {
+        transform: translateX(-50%) translateY(calc(-50% - 50px)) scale(0.8);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: translateX(-50%) translateY(calc(-50% - 50px)) scale(1.2);
+        opacity: 0;
+    }
+}
+
+@keyframes ripple-slow {
+    0% {
+        transform: translateX(-50%) translateY(calc(-50% - 50px)) scale(0.8);
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: translateX(-50%) translateY(calc(-50% - 50px)) scale(1.5);
+        opacity: 0;
+    }
+}
+
+.animate-ripple {
+    animation: ripple 3s ease-out infinite;
+}
+
+.animate-ripple-slow {
+    animation: ripple-slow 4s ease-out infinite;
+}
+
+.btn {
+    color: #3949AB;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 2px solid #3949AB;
+    border-radius: 7.5px;
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    background: transparent;
+    position: relative;
+    transition: all 1s;
+    overflow: hidden;
+}
+
+.btn:hover {
+    color: white;
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    height: 110%;
+    width: 0%;
+    top: 0;
+    left: -40px;
+    transform: skewX(45deg);
+    background-color: #3949AB;
+    z-index: -1;
+    transition: all 1s;
+}
+
+.btn:hover::before {
+    width: 180%;
+}

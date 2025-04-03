@@ -12,7 +12,7 @@ const Root = () => {
     { name: "Trang chủ", path: "/" },
     { name: "Chức năng", path: "/function" },
     { name: "Quản trị", path: "/admin" },
-    { name: "Liên hệ", path: "/contact" },
+    { name: "Tài khoản", path: "/account" },
   ];
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const Root = () => {
   return (
     <BrowserRouter>
       <nav className="bg-white shadow-md fixed w-full z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-9/10 mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Link to={"/"}>
@@ -44,82 +44,22 @@ const Root = () => {
               </Link>
             </div>
 
-            <div className="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+            <div className="hidden md:ml-6 md:flex md:items-center md:space-x-1">
               {navItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => setActiveItem(item.name)}
-                  className={`relative inline-flex items-center px-1 pt-1 pb-2 text-sm font-medium transition duration-300 ease-in-out ${
-                    activeItem === item.name
-                      ? "text-gray-900"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <Link to={item.path}>
-                    {item.name}
-                    <span
-                      className={`absolute bottom-0 left-0 h-0.5 bg-indigo-500 transition-all duration-300 ease-in-out ${
-                        activeItem === item.name ? "w-full" : "w-0"
-                      }`}
-                    ></span>
-                    <span
-                      className={`absolute bottom-0 left-0 h-0.5 bg-gray-300 transition-all duration-300 ease-in-out ${
-                        activeItem !== item.name ? "hover:w-full" : ""
-                      }`}
-                    ></span>
-                  </Link>
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center">
-              <div className="ml-4 relative flex-shrink-0" ref={profileRef}>
-                <button
-                  onClick={() => {
-                    setIsProfileOpen(!isProfileOpen);
-                  }}
-                  className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  id="user-menu"
-                  aria-expanded="false"
-                  aria-haspopup="true"
-                >
-                  <span className="sr-only">Open user menu</span>
-                  <img
-                    className="h-8 w-8 rounded-full"
-                    src={logo}
-                    alt="User avatar"
-                  />
-                </button>
-                {isProfileOpen && (
-                  <div
-                    className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-20"
-                    role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="user-menu"
+                <Link to={item.path}>
+                  <button
+                    key={item.name}
+                    onClick={() => setActiveItem(item.name)}
+                    className={`w-[110px] relative inline-flex justify-center items-center px-4 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out ${
+                      activeItem === item.name
+                        ? "bg-indigo-100 text-indigo-700"
+                        : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                    }`}
                   >
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      role="menuitem"
-                    >
-                      Thông tin cá nhân
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      role="menuitem"
-                    >
-                      Cài đặt
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      role="menuitem"
-                    >
-                      Đăng xuất
-                    </a>
-                  </div>
-                )}
-              </div>
+                    {item.name}
+                  </button>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
