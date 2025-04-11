@@ -59,7 +59,7 @@ const Banner = () => {
       </div>
 
       <div
-        className="w-1/2 bg-indigo-700 absolute right-0 top-0 h-full flex items-center justify-center -z-10 overflow-hidden"
+        className="w-1/2 bg-indigo-700 absolute right-0 top-0 h-[100vh] flex items-center justify-center -z-10 overflow-hidden"
         style={{ clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
       >
         <div className="absolute w-80 h-80 rounded-full bg-indigo-600 opacity-20 blur-xl"></div>
