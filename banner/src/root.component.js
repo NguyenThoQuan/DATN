@@ -59,7 +59,7 @@ const Banner = () => {
       </div>
 
       <div
-        className="w-1/2 bg-indigo-700 absolute right-0 top-0 h-[100vh] flex items-center justify-center -z-10 overflow-hidden"
+        className="w-1/2 bg-indigo-700 absolute right-0 top-0 h-[458px] flex justify-center -z-10 overflow-hidden"
         style={{ clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
       >
         <div className="absolute w-80 h-80 rounded-full bg-indigo-600 opacity-20 blur-xl"></div>
@@ -67,12 +67,12 @@ const Banner = () => {
         <div className="absolute w-4 h-4 rounded-full bg-yellow-300 opacity-40 bottom-1/2 right-1/4 animate-float-reverse"></div>
         <div className="absolute w-32 h-32 rounded-full bg-purple-400 opacity-15 blur-md top-1/3 right-1/4 animate-float-slow"></div>
         <div className="absolute w-60 h-60 rounded-full bg-indigo-500 opacity-10 blur-sm translate-x-[100px] animate-ripple z-0"></div>
-        <div className="absolute w-72 h-72 rounded-full bg-indigo-500 opacity-5 blur-sm translate-x-[200px] translate-y-[100px] animate-ripple-slow z-0"></div>
+        <div className="absolute w-72 h-72 rounded-full bg-indigo-500 opacity-5 blur-sm translate-x-[200px] translate-y-[300px] animate-ripple-slow z-0"></div>
         <div className="relative">
           <img
             src={logo}
             alt="Logo EvoERP"
-            className="w-60 h-auto rounded-full ml-[75px] transform -translate-y-[50px] z-10 relative 
+            className="w-60 h-auto rounded-full ml-[75px] transform translate-y-[175px] z-10 relative 
                 shadow-lg shadow-indigo-900/50 
                 hover:shadow-2xl hover:shadow-indigo-500/70 transition-all duration-300
                 animate-bounce-slow"

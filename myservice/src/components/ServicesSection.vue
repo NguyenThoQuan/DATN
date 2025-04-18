@@ -1,5 +1,5 @@
 <template>
-  <section class="text-white mt-20" id="services">
+  <section class="text-white mt-20 -z-1" id="services">
     <div class="px-4 xl:pl-16">
       <h2 class="text-4xl font-bold text-indigo-700 mb-4">
         Các dịch vụ của chúng tôi
@@ -11,7 +11,7 @@
       <div
         v-for="service in services"
         :key="service.id"
-        class="px-8 py-12 rounded-xl shadow-lg border-[#1f1641] backdrop-blur-sm bg-white/10"
+        class="px-8 py-12 rounded-xl shadow-lg border-[#1f1641] backdrop-blur-sm bg-white/10 -z-1"
       >
         <div class="mx-auto h-24 w-24 text-center xl:h-28 xl:w-28">
           <div>
@@ -20,11 +20,11 @@
         </div>
         <div class="text-center">
           <h3
-            class="pt-8 text-lg font-semibold uppercase text-indigo-700 lg:text-xl"
+            class="pt-8 text-lg font-black uppercase text-indigo-700 lg:text-xl"
           >
             {{ service.name }}
           </h3>
-          <p class="text-indigo-700 pt-4 text-sm group-hover:text-white md:text-base">
+          <p class="text-indigo-700 font-medium pt-4 text-sm group-hover:text-white md:text-base">
             {{ service.description }}
           </p>
         </div>

@@ -110,6 +110,7 @@
     position: relative;
     transition: all 1s;
     overflow: hidden;
+    z-index: 0;
 }
 
 .btn:hover {
