@@ -1,5 +1,6 @@
 import { h, createApp } from "vue";
 import singleSpaVue from "single-spa-vue";
+import "remixicon/fonts/remixicon.css";
 
 import App from "./App.vue";
 
