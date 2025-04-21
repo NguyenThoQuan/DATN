@@ -4,38 +4,38 @@ import { ref } from "vue";
 const services = ref([
   {
     id: 1,
-    icon: "ri-store-line",
-    name: "Quản lý kho",
+    icon: "ri-layout-line",
+    name: "Giao diện tùy chỉnh",
     description:
-      "Tối ưu hóa quy trình quản lý tồn kho, theo dõi hàng hóa và tự động hóa nhập/xuất kho.",
+      "Cá nhân hóa giao diện, bố cục, màu sắc và widget theo vai trò hoặc sở thích cá nhân.",
   },
   {
     id: 2,
-    icon: "ri-money-dollar-circle-line",
-    name: "Kế toán tài chính",
+    icon: "ri-flow-chart",
+    name: "Quy trình làm việc linh hoạt",
     description:
-      "Quản lý dòng tiền, lập báo cáo tài chính và theo dõi các giao dịch kế toán chính xác.",
+      "Thiết lập và điều chỉnh quy trình kinh doanh như phê duyệt, báo cáo theo nhu cầu doanh nghiệp.",
   },
   {
     id: 3,
-    icon: "ri-user-settings-line",
-    name: "Quản lý nhân sự",
+    icon: "ri-bar-chart-line",
+    name: "Báo cáo và phân tích tùy chỉnh",
     description:
-      "Tự động hóa chấm công, quản lý hồ sơ nhân viên và tính toán lương thưởng hiệu quả.",
+      "Tạo báo cáo, biểu đồ và bảng điều khiển theo KPI, xuất dữ liệu theo định dạng mong muốn.",
   },
   {
     id: 4,
-    icon: "ri-shopping-cart-line",
-    name: "Quản lý bán hàng",
+    icon: "ri-puzzle-line",
+    name: "Tích hợp module tùy chọn",
     description:
-      "Theo dõi đơn hàng, quản lý khách hàng và tối ưu hóa quy trình bán hàng toàn diện.",
+      "Bật/tắt hoặc thêm module như quản lý kho, tài chính, nhân sự theo quy mô doanh nghiệp.",
   },
   {
     id: 5,
-    icon: "ri-building-3-line",
-    name: "Quản lý sản xuất",
+    icon: "ri-shield-user-line",
+    name: "Quản lý quyền truy cập cá nhân hóa",
     description:
-      "Lập kế hoạch sản xuất, theo dõi tiến độ và quản lý nguyên vật liệu hiệu quả.",
+      "Tùy chỉnh quyền truy cập cho từng vai trò, đảm bảo bảo mật và hiển thị dữ liệu phù hợp.",
   },
   {
     id: 6,
@@ -73,7 +73,9 @@ const services = ref([
           >
             {{ service.name }}
           </h3>
-          <p class="text-indigo-700 font-medium pt-4 text-sm group-hover:text-indigo-700 md:text-base">
+          <p
+            class="text-indigo-700 font-medium pt-4 text-sm group-hover:text-indigo-700 md:text-base"
+          >
             {{ service.description }}
           </p>
         </div>
