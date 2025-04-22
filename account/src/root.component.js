@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "regenerator-runtime/runtime";
 import {
   FaFacebookF,
   FaTiktok,
@@ -20,87 +21,164 @@ export default function Root() {
     register: { username: "", email: "", password: "" },
     login: { email: "", password: "" },
   });
-
-  const checkEmail = (email) => {
-    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
-    return emailRegex.test(email);
-  };
-
-  const validateRegisterInput = (name, value) => {
-    let error = "";
-    if (name === "username") {
-      if (value.length < 4) error = "Username must be at least 4 characters.";
-      else if (value.length > 20)
-        error = "Username must be less than 20 characters.";
-    } else if (name === "email") {
-      if (!checkEmail(value)) error = "Email is not valid.";
-    } else if (name === "password") {
-      if (value.length < 8) error = "Password must be at least 8 characters.";
-      else if (value.length > 20)
-        error = "Password must be less than 20 characters.";
-    }
-    return error;
-  };
-
-  const validateLoginInput = (name, value) => {
-    let error = "";
-    if (name === "email") {
-      if (!checkEmail(value)) error = "Email is not valid.";
-    } else if (name === "password") {
-      if (value.length < 8) error = "Password must be at least 8 characters.";
-      else if (value.length > 20)
-        error = "Password must be less than 20 characters.";
-    }
-    return error;
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRegisterChange = (e) => {
     const { name, value } = e.target;
-    setRegisterForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({
-      ...prev,
-      register: {
-        ...prev.register,
-        [name]: validateRegisterInput(name, value),
-      },
-    }));
+    setRegisterForm({
+      ...registerForm,
+      [name]: value,
+    });
+    // Clear error when user types
+    if (errors.register[name]) {
+      setErrors({
+        ...errors,
+        register: {
+          ...errors.register,
+          [name]: "",
+        },
+      });
+    }
   };
 
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
-    setLoginForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({
-      ...prev,
-      login: { ...prev.login, [name]: validateLoginInput(name, value) },
-    }));
-  };
-
-  const checkRequired = (formData, type) => {
-    const newErrors = {};
-    Object.keys(formData).forEach((key) => {
-      if (!formData[key].trim()) {
-        newErrors[key] = `${
-          key.charAt(0).toUpperCase() + key.slice(1)
-        } is required`;
-      }
+    setLoginForm({
+      ...loginForm,
+      [name]: value,
     });
-    setErrors((prev) => ({ ...prev, [type]: { ...prev[type], ...newErrors } }));
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleRegisterSubmit = (e) => {
-    e.preventDefault();
-    if (checkRequired(registerForm, "register")) {
-      // Proceed with registration logic (e.g., API call)
-      console.log("Register form submitted:", registerForm);
+    // Clear error when user types
+    if (errors.login[name]) {
+      setErrors({
+        ...errors,
+        login: {
+          ...errors.login,
+          [name]: "",
+        },
+      });
     }
   };
 
-  const handleLoginSubmit = (e) => {
+  const validateRegisterForm = () => {
+    let valid = true;
+    const newErrors = { ...errors.register };
+
+    if (!registerForm.username.trim()) {
+      newErrors.username = "Vui lòng nhập họ và tên";
+      valid = false;
+    }
+
+    if (!registerForm.email.trim()) {
+      newErrors.email = "Vui lòng nhập email";
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
+      newErrors.email = "Email không hợp lệ";
+      valid = false;
+    }
+
+    if (!registerForm.password) {
+      newErrors.password = "Vui lòng nhập mật khẩu";
+      valid = false;
+    } else if (registerForm.password.length < 6) {
+      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
+      valid = false;
+    }
+
+    setErrors({
+      ...errors,
+      register: newErrors,
+    });
+
+    return valid;
+  };
+
+  const validateLoginForm = () => {
+    let valid = true;
+    const newErrors = { ...errors.login };
+
+    if (!loginForm.email.trim()) {
+      newErrors.email = "Vui lòng nhập email";
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginForm.email)) {
+      newErrors.email = "Email không hợp lệ";
+      valid = false;
+    }
+
+    if (!loginForm.password) {
+      newErrors.password = "Vui lòng nhập mật khẩu";
+      valid = false;
+    }
+
+    setErrors({
+      ...errors,
+      login: newErrors,
+    });
+
+    return valid;
+  };
+
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    if (checkRequired(loginForm, "login")) {
-      // Proceed with login logic (e.g., API call)
-      console.log("Login form submitted:", loginForm);
+    if (!validateRegisterForm()) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:3000/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(registerForm),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Đăng ký thất bại");
+      }
+
+      // Xử lý sau khi đăng ký thành công
+      alert("Đăng ký thành công! Vui lòng đăng nhập.");
+      setIsRightPanelActive(false); // Chuyển sang form đăng nhập
+      setRegisterForm({ username: "", email: "", password: "" }); // Reset form
+    } catch (error) {
+      console.error("Lỗi đăng ký:", error);
+      alert(error.message || "Có lỗi xảy ra khi đăng ký");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateLoginForm()) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:3000/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginForm),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Đăng nhập thất bại");
+      }
+
+      // Xử lý sau khi đăng nhập thành công
+      alert("Đăng nhập thành công!");
+      // Lưu token vào localStorage hoặc state management nếu cần
+      localStorage.setItem("token", data.token);
+      // Redirect hoặc cập nhật trạng thái ứng dụng
+    } catch (error) {
+      console.error("Lỗi đăng nhập:", error);
+      alert(error.message || "Email hoặc mật khẩu không đúng");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,10 +206,10 @@ export default function Root() {
               <input
                 type="text"
                 name="username"
-                value={registerForm.username}
-                onChange={handleRegisterChange}
                 placeholder="Họ và tên"
                 className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
+                value={registerForm.username}
+                onChange={handleRegisterChange}
               />
               <small className="absolute top-12 left-0 text-red-500 text-xs">
                 {errors.register.username}
@@ -142,10 +220,10 @@ export default function Root() {
               <input
                 type="email"
                 name="email"
-                value={registerForm.email}
-                onChange={handleRegisterChange}
                 placeholder="Email"
                 className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
+                value={registerForm.email}
+                onChange={handleRegisterChange}
               />
               <small className="absolute top-12 left-0 text-red-500 text-xs">
                 {errors.register.email}
@@ -156,18 +234,18 @@ export default function Root() {
               <input
                 type="password"
                 name="password"
-                value={registerForm.password}
-                onChange={handleRegisterChange}
                 placeholder="Mật khẩu"
                 className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
+                value={registerForm.password}
+                onChange={handleRegisterChange}
               />
               <small className="absolute top-12 left-0 text-red-500 text-xs">
                 {errors.register.password}
               </small>
               <span className="absolute left-0 bottom-2 w-0 border-b-2 border-indigo-700 transition-all duration-300"></span>
             </div>
-            <button type="submit" className="btn">
-              Đăng kí
+            <button type="submit" className="btn" disabled={isLoading}>
+              {isLoading ? "Đang xử lý..." : "Đăng kí"}
             </button>
             <span className="text-sm mt-5">hoặc đăng nhập bằng</span>
             <div className="flex mt-5 space-x-2">
@@ -200,10 +278,10 @@ export default function Root() {
               <input
                 type="email"
                 name="email"
-                value={loginForm.email}
-                onChange={handleLoginChange}
                 placeholder="Email"
                 className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
+                value={loginForm.email}
+                onChange={handleLoginChange}
               />
               <small className="absolute top-12 left-0 text-red-500 text-xs">
                 {errors.login.email}
@@ -214,10 +292,10 @@ export default function Root() {
               <input
                 type="password"
                 name="password"
-                value={loginForm.password}
-                onChange={handleLoginChange}
                 placeholder="Mật khẩu"
                 className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
+                value={loginForm.password}
+                onChange={handleLoginChange}
               />
               <small className="absolute top-12 left-0 text-red-500 text-xs">
                 {errors.login.password}
@@ -242,8 +320,8 @@ export default function Root() {
                 Quên mật khẩu
               </a>
             </div>
-            <button type="submit" className="btn">
-              Đăng nhập
+            <button type="submit" className="btn" disabled={isLoading}>
+              {isLoading ? "Đang xử lý..." : "Đăng nhập"}
             </button>
             <span className="text-sm mt-5">hoặc đăng nhập bằng</span>
             <div className="flex mt-5 space-x-2">
