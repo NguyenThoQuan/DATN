@@ -43,13 +43,15 @@ const Banner = () => {
   }, [currentIndex, isTyping, fullName]);
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-indigo-50 to-indigo-100 p-8 rounded-lg shadow-lg">
-      <div className="w-full md:w-6/12 lg:w-6/12 p-6">
+    <div className="flex flex-col md:flex-row sm:flex-row max-sm:flex-row items-center justify-between bg-gradient-to-r from-indigo-50 to-indigo-100 p-8 rounded-lg shadow-lg">
+      <div className="w-full md:w-6/12 lg:w-5/12 sm:w-6/12 max-sm:w-6/12 p-6">
         <h3 className="text-2xl font-medium text-indigo-700 mb-2">Xin chào</h3>
-        <h1 className="text-5xl font-bold text-gray-800 mb-4">
-          Tôi là <span className="text-indigo-700">{displayedName}</span>
+        <h1 className="text-5xl font-bold text-gray-800 mb-4 whitespace-nowrap overflow-hidden">
+          <span className="inline-block truncate">
+            Tôi là <span className="text-indigo-700">{displayedName}</span>
+          </span>
         </h1>
-        <h4 className="font-medium text-lg text-gray-600 mb-6 transition-all duration-300 hover:text-gray-800">
+        <h4 className="font-medium text-lg text-gray-600 mb-6 transition-all duration-300 hover:text-gray-800 line-clamp-4 overflow-hidden text-ellipsis">
           EvoERP là giải pháp quản trị doanh nghiệp linh hoạt, được thiết kế để
           tùy chỉnh đa dạng theo nhu cầu riêng của từng người dùng. Ứng dụng
           tích hợp đầy đủ tính năng từ kế toán, nhân sự đến quản lý kho, giúp
@@ -59,7 +61,7 @@ const Banner = () => {
       </div>
 
       <div
-        className="w-1/2 bg-indigo-700 absolute right-0 top-0 h-[458px] flex justify-center -z-10 overflow-hidden"
+        className="w-1/2 bg-indigo-700 absolute right-0 top-0 h-[462px] flex justify-center -z-10 overflow-hidden"
         style={{ clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
       >
         <div className="absolute w-80 h-80 rounded-full bg-indigo-600 opacity-20 blur-xl"></div>
