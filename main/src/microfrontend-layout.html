@@ -2,10 +2,13 @@
   <div class="navigation"><application name="@mfe/navbarR"></application></div>
   <div class="bodyMain">
     <main>
-      <route path="/">
+      <route default>
         <application name="@mfe/banner"></application>
         <application name="@mfe/myservice"></application>
         <application name="@mfe/contact"></application>
+      </route>
+      <route path="account">
+        <application name="@mfe/account"></application>
       </route>
     </main>
   </div>

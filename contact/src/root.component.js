@@ -3,6 +3,10 @@ import "./index.css";
 import logo from "./images/logo-evoerp.png";
 
 export default function Root() {
+  const linkFacebook = () => {
+    window.open("https://www.facebook.com/nguyentho.quan.9", "_blank");
+  };
+
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-8xl mx-10">
@@ -67,7 +71,10 @@ export default function Root() {
               </div>
               <div className="bottom">
                 <div className="social-buttons-container">
-                  <button className="social-button .social-button1">
+                  <button
+                    className="social-button .social-button1"
+                    onClick={() => linkFacebook()}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="32"

@@ -2,7 +2,7 @@
   "name": "my-project",
   "version": "1.0.0",
   "scripts": {
-    "start": "concurrently \"npm run start --prefix main\" \"npm run start:standalone --prefix navbarR\" \"npm run start:standalone --prefix banner\" \"npm run serve:standalone --prefix myservice\" \"npm run start:standalone --prefix contact\""
+    "start": "concurrently \"npm run start --prefix main\" \"npm run start:standalone --prefix navbarR\" \"npm run start:standalone --prefix banner\" \"npm run serve:standalone --prefix myservice\" \"npm run start:standalone --prefix contact\" \"npm run start:standalone --prefix account\""
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
