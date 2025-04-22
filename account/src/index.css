@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+.container {
+    transition: all 0.6s ease-in-out;
+}
+
+.form-container {
+    transition: all 0.6s ease-in-out;
+}
+
+.form-control span,
+.form-control2 span {
+    position: absolute;
+    border-bottom: 2px solid #4f46e5;
+    /* indigo-700 */
+    left: 0;
+    bottom: 8px;
+    width: 0%;
+    transition: all 0.3s ease;
+}
+
+.form-control input:focus~span,
+.form-control2 input:focus~span {
+    width: 100%;
+}
+
+.login-container {
+    transition: all 0.6s ease-in-out;
+}
+
+.container.right-panel-active .login-container {
+    transform: translateX(100%);
+}
+
+.register-container {
+    transition: all 0.6s ease-in-out;
+}
+
+.container.right-panel-active .register-container {
+    transform: translateX(100%);
+    opacity: 1;
+    z-index: 5;
+    animation: show 0.6s;
+}
+
+@keyframes show {
+
+    0%,
+    49.99% {
+        opacity: 0;
+        z-index: 1;
+    }
+
+    50%,
+    100% {
+        opacity: 1;
+        z-index: 5;
+    }
+}
+
+.overlay-container {
+    transition: transform 0.6s ease-in-out;
+}
+
+.container.right-panel-active .overlay-container {
+    transform: translateX(-100%);
+}
+
+.overlay {
+    transform: translateX(0);
+    transition: transform 0.6s ease-in-out;
+}
+
+.container.right-panel-active .overlay {
+    transform: translateX(50%);
+}
+
+.overlay-panel {
+    transition: transform 0.6s ease-in-out;
+}
+
+.overlay-left {
+    transform: translateX(-20%);
+}
+
+.container.right-panel-active .overlay-left {
+    transform: translateX(0);
+}
+
+.overlay-right {
+    transform: translateX(0);
+}
+
+.container.right-panel-active .overlay-right {
+    transform: translateX(20%);
+}
+
+.btn {
+    color: #3949AB;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 2px solid #3949AB;
+    border-radius: 7.5px;
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    background: transparent;
+    position: relative;
+    transition: all 1s;
+    overflow: hidden;
+    margin-top: 10px;
+    z-index: 0;
+}
+
+.btn:hover {
+    color: white;
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    height: 110%;
+    width: 0%;
+    top: 0;
+    left: -40px;
+    transform: skewX(45deg);
+    background-color: #3949AB;
+    z-index: -1;
+    transition: all 1s;
+}
+
+.btn:hover::before {
+    width: 180%;
+}

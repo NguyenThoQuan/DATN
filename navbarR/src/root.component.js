@@ -3,7 +3,6 @@ import logo from "./images/logo-evoerp.png";
 import { useState, useRef, useEffect } from "react";
 
 const Root = () => {
-  // Khởi tạo state với giá trị từ localStorage hoặc mặc định là "Trang chủ"
   const [activeItem, setActiveItem] = useState(
     localStorage.getItem("activeNavItem") || "Trang chủ"
   );
@@ -30,14 +29,16 @@ const Root = () => {
     };
   }, []);
 
-  // Hàm xử lý khi click vào menu item
   const handleItemClick = (itemName) => {
     setActiveItem(itemName);
     localStorage.setItem("activeNavItem", itemName);
   };
 
   return (
-    <nav className="bg-white shadow-md fixed w-full z-[1000] isolate top-0">
+    <nav
+      className="bg-white shadow-md fixed w-full z-[1000] isolate top-0"
+      style={{ display: activeItem === "Tài khoản" ? "none" : "block" }}
+    >
       <div className="max-w-9/10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
