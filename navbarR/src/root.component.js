@@ -37,7 +37,13 @@ const Root = () => {
   return (
     <nav
       className="bg-white shadow-md fixed w-full z-[1000] isolate top-0"
-      style={{ display: activeItem === "Tài khoản" ? "none" : "block" }}
+      style={{
+        display:
+          localStorage.getItem("token") &&
+          localStorage.getItem("token").length > 0
+            ? "block"
+            : "none",
+      }}
     >
       <div className="max-w-9/10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
