@@ -134,15 +134,18 @@ export default function Root() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Đăng ký thất bại");
+        if (data === "Email already exists") {
+          toast.error("Email đã tồn tại !");
+        } else {
+          toast.error("Có vấn đề phía máy chủ, vui lòng thử lại sau !");
+        }
+      } else {
+        toast.success("Đăng kí thành công !");
+        setIsRightPanelActive(false); // Chuyển sang form đăng nhập
+        setRegisterForm({ username: "", email: "", password: "" });
       }
-
-      toast.success("Đăng kí thành công !"); // Xử lý sau khi đăng ký thành công
-      setIsRightPanelActive(false); // Chuyển sang form đăng nhập
-      setRegisterForm({ username: "", email: "", password: "" }); // Reset form
     } catch (error) {
       console.error("Lỗi đăng ký:", error);
-      alert(error.message || "Có lỗi xảy ra khi đăng ký");
     } finally {
       setIsLoading(false);
     }
@@ -165,14 +168,16 @@ export default function Root() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Đăng nhập thất bại");
+        if (data === "Incorrect password") {
+          toast.error("Tài khoản hoặc mật khẩu không chính xác !");
+        } else if (data === "Cannot find user") {
+          toast.error("Tài khoản không tồn tại !");
+        }
+      } else {
+        toast.success("Đăng nhập thành công !");
+        window.location.assign("http://192.168.110.14:9000");
+        localStorage.setItem("token", data.accessToken);
       }
-
-      // Xử lý sau khi đăng nhập thành công
-      toast.success("Đăng nhập thành công !");
-      // Lưu token vào localStorage hoặc state management nếu cần
-      localStorage.setItem("token", data.accessToken);
-      // Redirect hoặc cập nhật trạng thái ứng dụng
     } catch (error) {
       console.error("Lỗi đăng nhập:", error);
       alert(error.message || "Email hoặc mật khẩu không đúng");

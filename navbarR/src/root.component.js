@@ -40,6 +40,7 @@ const Root = () => {
       style={{
         display:
           localStorage.getItem("token") &&
+          localStorage.getItem("token") !== "undefined" &&
           localStorage.getItem("token").length > 0
             ? "block"
             : "none",
