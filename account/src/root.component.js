@@ -172,11 +172,14 @@ export default function Root() {
           toast.error("Tài khoản hoặc mật khẩu không chính xác !");
         } else if (data === "Cannot find user") {
           toast.error("Tài khoản không tồn tại !");
+        } else if (!data) {
+          toast.error("Tài khoản không tồn tại !");
         }
       } else {
         toast.success("Đăng nhập thành công !");
-        window.location.assign("http://192.168.110.14:9000");
         localStorage.setItem("token", data.accessToken);
+        window.location.pathname = "/";
+        localStorage.setItem("activeNavItem", "Trang chủ");
       }
     } catch (error) {
       console.error("Lỗi đăng nhập:", error);

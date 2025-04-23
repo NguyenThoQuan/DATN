@@ -13,7 +13,8 @@ const Root = () => {
     { name: "Trang chủ", path: "/" },
     { name: "Dịch vụ", path: "/service" },
     { name: "Quản trị", path: "/admin" },
-    { name: "Tài khoản", path: "/account" },
+    { name: "Tài khoản", path: "/infor" },
+    { name: "Đăng nhập", path: "/account" },
   ];
 
   useEffect(() => {
@@ -35,17 +36,7 @@ const Root = () => {
   };
 
   return (
-    <nav
-      className="bg-white shadow-md fixed w-full z-[1000] isolate top-0"
-      style={{
-        display:
-          localStorage.getItem("token") &&
-          localStorage.getItem("token") !== "undefined" &&
-          localStorage.getItem("token").length > 0
-            ? "block"
-            : "none",
-      }}
-    >
+    <nav className="bg-white shadow-md fixed w-full z-[1000] isolate top-0 noneNav">
       <div className="max-w-9/10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -60,20 +51,34 @@ const Root = () => {
           </div>
 
           <div className="hidden md:ml-6 md:flex md:items-center md:space-x-1">
-            {navItems.map((item) => (
+            {localStorage.getItem("token") &&
+            localStorage.getItem("token") !== "undefined" ? (
+              navItems
+                .filter((item) => item.path !== "/account")
+                .map((item) => (
+                  <a
+                    key={item.name}
+                    href={item.path}
+                    onClick={() => handleItemClick(item.name)}
+                    className={`w-[110px] relative inline-flex justify-center items-center px-4 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out ${
+                      activeItem === item.name
+                        ? "bg-indigo-100 text-indigo-700"
+                        : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                    }`}
+                  >
+                    {item.name}
+                  </a>
+                ))
+            ) : (
               <a
-                key={item.name}
-                href={item.path}
-                onClick={() => handleItemClick(item.name)}
-                className={`w-[110px] relative inline-flex justify-center items-center px-4 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out ${
-                  activeItem === item.name
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                }`}
+                href="/account"
+                className={
+                  "w-[110px] relative inline-flex justify-center items-center px-4 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out bg-indigo-100 text-indigo-700"
+                }
               >
-                {item.name}
+                Đăng nhập
               </a>
-            ))}
+            )}
           </div>
         </div>
       </div>
