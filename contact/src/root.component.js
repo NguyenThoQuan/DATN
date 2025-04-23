@@ -14,7 +14,7 @@ export default function Root() {
           Liên hệ với chúng tôi
         </h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="parent">
             <div className="card">
               <div className="logo">
@@ -122,91 +122,6 @@ export default function Root() {
               allowFullScreen=""
               loading="lazy"
             ></iframe>
-          </div>
-
-          <div
-            className="p-6 rounded-lg shadow-xl"
-            style={{
-              background:
-                "linear-gradient(135deg, rgb(67, 56, 202) 0%, rgb(199, 210, 254) 100%)",
-            }}
-          >
-            <div className="text-center mb-4">
-              <h2 className="font-black text-3xl text-white">
-                Thông tin liên hệ
-              </h2>
-            </div>
-            <form className="space-y-3">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-white"
-                >
-                  Họ và tên
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  className="mt-1 block w-full px-3 py-2 bg-white/90 rounded-md shadow-inner border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
-                  style={{ boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.1)" }}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-medium text-white"
-                >
-                  Số điện thoại
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  className="mt-1 block w-full px-3 py-2 bg-white/90 rounded-md shadow-inner border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
-                  style={{ boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.1)" }}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-white"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  className="mt-1 block w-full px-3 py-2 bg-white/90 rounded-md shadow-inner border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
-                  style={{ boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.1)" }}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium text-white"
-                >
-                  Nội dung
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={4}
-                  className="mt-1 block w-full px-3 py-2 bg-white/90 rounded-md shadow-inner border border-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
-                  style={{ boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.1)" }}
-                ></textarea>
-              </div>
-
-              <div className="flex justify-center">
-                <button type="submit" className="btn">
-                  GỬI THÔNG TIN
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       </div>

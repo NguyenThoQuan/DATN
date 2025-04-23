@@ -13,7 +13,7 @@ const Root = () => {
     { name: "Trang chủ", path: "/" },
     { name: "Dịch vụ", path: "/service" },
     { name: "Quản trị", path: "/admin" },
-    { name: "Tài khoản", path: "/infor" },
+    { name: "Tài khoản", path: "/inforuser" },
     { name: "Đăng nhập", path: "/account" },
   ];
 
