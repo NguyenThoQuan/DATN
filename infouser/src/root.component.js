@@ -1,15 +1,53 @@
-import React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import logo from "./images/logo-evoerp.png";
+import "regenerator-runtime/runtime";
 import "./index.css";
 
 export default function Root() {
   const [activeTab, setActiveTab] = useState("info");
+  const [infoUser, setInfoUser] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+  console.log(infoUser);
 
   const handleLogout = () => {
     window.location.pathname = "/account";
     localStorage.clear();
   };
+
+  const handleChangeValue = (value, key) => {
+    setInfoUser((prevData) => ({ ...prevData, [key]: value }));
+  };
+
+  const handleSubmitInfoUser = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:3000/api/users", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(infoUser),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Thông tin không hợp lệ !");
+      } else {
+        toast.success("Cập nhật thông tin thành công !");
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const userLogin = JSON.parse(localStorage.getItem("userLogin"));
+    setInfoUser(userLogin);
+  }, []);
 
   return (
     <div className="flex bg-gray-100 p-8">
@@ -56,11 +94,19 @@ export default function Root() {
                   type="text"
                   name="username"
                   placeholder="Họ và tên"
+                  value={infoUser?.fullName}
+                  onChange={(e) =>
+                    handleChangeValue(e.currentTarget.value, "fullName")
+                  }
                   className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
                 />
                 <input
                   type="date"
                   name="birthday"
+                  value={infoUser?.birthday}
+                  onChange={(e) =>
+                    handleChangeValue(e.currentTarget.value, "birthday")
+                  }
                   placeholder="Ngày sinh"
                   className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
                 />
@@ -70,12 +116,20 @@ export default function Root() {
                   type="text"
                   name="username"
                   placeholder="Số điện thoại"
+                  value={infoUser?.phoneNumber}
+                  onChange={(e) =>
+                    handleChangeValue(e.currentTarget.value, "phoneNumber")
+                  }
                   className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
                 />
                 <input
                   type="email"
                   name="email"
                   placeholder="Email"
+                  value={infoUser?.email}
+                  onChange={(e) =>
+                    handleChangeValue(e.currentTarget.value, "email")
+                  }
                   className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
                 />
               </div>
@@ -87,6 +141,11 @@ export default function Root() {
                       name="gender"
                       value="male"
                       className="form-checkbox h-5 w-5 text-indigo-700"
+                      checked={infoUser?.male}
+                      onChange={() => {
+                        handleChangeValue(true, "male");
+                        handleChangeValue(false, "female");
+                      }}
                     />
                     <span className="ml-2">Nam</span>
                   </label>
@@ -95,6 +154,11 @@ export default function Root() {
                       type="checkbox"
                       name="gender"
                       value="female"
+                      checked={infoUser?.female}
+                      onChange={() => {
+                        handleChangeValue(true, "female");
+                        handleChangeValue(false, "male");
+                      }}
                       className="form-checkbox h-5 w-5 text-indigo-700"
                     />
                     <span className="ml-2">Nữ</span>
@@ -104,11 +168,17 @@ export default function Root() {
                   type="text"
                   name="address"
                   placeholder="Địa chỉ"
+                  value={infoUser?.address}
+                  onChange={(e) =>
+                    handleChangeValue(e.currentTarget.value, "address")
+                  }
                   className="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-gray-400 outline-none focus:border-indigo-700"
                 />
               </div>
               <div className="flex justify-center">
-                <button className="btn">Lưu thay đổi</button>
+                <button className="btn" disabled={isLoading}>
+                  {isLoading ? "Đang xử lý..." : "Lưu thay đổi"}
+                </button>
               </div>
             </div>
           </div>

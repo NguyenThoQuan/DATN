@@ -119,6 +119,7 @@ export default function Root() {
 
     setIsLoading(true);
     const registerSubmit = {
+      fullName: registerForm.username,
       email: registerForm.email,
       password: registerForm.password,
     };
@@ -178,6 +179,7 @@ export default function Root() {
       } else {
         toast.success("Đăng nhập thành công !");
         localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("userLogin", JSON.stringify(data.user));
         window.location.pathname = "/";
         localStorage.setItem("activeNavItem", "Trang chủ");
       }
