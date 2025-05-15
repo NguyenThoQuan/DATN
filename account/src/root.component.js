@@ -169,7 +169,7 @@ export default function Root() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (data === "Incorrect password") {
+        if (data === "Incorrect password" || data === "Password is too short") {
           toast.error("Tài khoản hoặc mật khẩu không chính xác !");
         } else if (data === "Cannot find user") {
           toast.error("Tài khoản không tồn tại !");
