@@ -8,6 +8,11 @@ const Banner = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const fullName = "EvoERP";
 
+  const handleStart = () => {
+    window.location.pathname = "/service";
+    localStorage.setItem("activeNavItem", "Dịch vụ");
+  };
+
   useEffect(() => {
     const typingSpeed = 200;
     const eraseSpeed = 100;
@@ -57,7 +62,9 @@ const Banner = () => {
           tích hợp đầy đủ tính năng từ kế toán, nhân sự đến quản lý kho, giúp
           tối ưu hóa hiệu suất công việc một cách cá nhân hóa.
         </h4>
-        <button className="btn">Bắt đầu</button>
+        <button className="btn" onClick={() => handleStart()}>
+          Bắt đầu
+        </button>
       </div>
 
       <div
