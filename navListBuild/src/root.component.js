@@ -30,7 +30,6 @@ export default function Root() {
       }
     } catch (error) {
       console.error("Lỗi:", error);
-      toast.error("Đã có lỗi xảy ra khi gọi API!");
     }
   };
 
