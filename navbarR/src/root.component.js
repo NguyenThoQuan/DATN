@@ -11,7 +11,7 @@ const Root = () => {
 
   const navItems = [
     { name: "Trang chủ", path: "/" },
-    { name: "Dịch vụ", path: "/service" },
+    { name: "Quản lý", path: "/service" },
     { name: "Quản trị", path: "/admin" },
     { name: "Tài khoản", path: "/inforuser" },
     { name: "Đăng nhập", path: "/account" },

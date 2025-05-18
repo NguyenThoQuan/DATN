@@ -1,8 +1,8 @@
 {
-  "name": "@manager/manager",
+  "name": "@navListBuild/navListBuild",
   "scripts": {
     "start": "webpack serve",
-    "start:standalone": "webpack serve --env standalone --port 8087",
+    "start:standalone": "webpack serve --env standalone --port 8088",
     "build": "concurrently npm:build:*",
     "build:webpack": "webpack --mode=production",
     "analyze": "webpack --mode=production --env analyze",
@@ -43,13 +43,11 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
     "@tailwindcss/postcss": "^4.1.7",
     "postcss": "^8.5.3",
     "postcss-loader": "^8.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-hot-toast": "^2.5.2",
     "regenerator-runtime": "^0.14.1",
     "single-spa-react": "^6.0.2",
     "tailwindcss": "^4.1.7"
