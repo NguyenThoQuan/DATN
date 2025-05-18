@@ -2,6 +2,11 @@ import {
   PlusIcon,
   CircleStackIcon,
   EllipsisVerticalIcon,
+  PencilSquareIcon,
+  NoSymbolIcon,
+  TrashIcon,
+  XMarkIcon,
+  LockOpenIcon,
 } from "@heroicons/react/24/solid";
 import "regenerator-runtime/runtime";
 import { useEffect, useState } from "react";
@@ -9,14 +14,41 @@ import toast, { Toaster } from "react-hot-toast";
 
 export default function Root() {
   const [nameModule, setNameModule] = useState("");
+  const [nameEdit, setNameEdit] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [listModule, setListModule] = useState();
-  console.log(listModule);
+  const [indexItem, setIndexItem] = useState();
+  const [typeAction, setTypeAction] = useState();
+  const [isClose, setIsClose] = useState(true);
 
   const getModule = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/build", {
-        method: "GET",
+      const response = await fetch(
+        "http://localhost:3000/api/build?_sort=mode",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Có lỗi xảy ra ở máy chủ !");
+      } else {
+        setListModule(data);
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
+  };
+
+  const deleteModule = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/build/${id}`, {
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
@@ -27,7 +59,63 @@ export default function Root() {
       if (!response.ok) {
         toast.error("Có lỗi xảy ra ở máy chủ !");
       } else {
-        setListModule(data);
+        toast.success("Hoàn tất xóa hệ thống !");
+        setIndexItem(null);
+        setTypeAction("");
+        getModule();
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
+  };
+
+  const handleAction = async (id) => {
+    let dataSubmit;
+
+    if (typeAction === "stop") {
+      dataSubmit = {
+        mode: "inactive",
+      };
+    } else if (typeAction === "edit") {
+      dataSubmit = {
+        name: nameEdit,
+      };
+    } else if (typeAction === "open") {
+      dataSubmit = {
+        mode: "user",
+      };
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/build/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataSubmit),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Có lỗi xảy ra ở máy chủ !");
+      } else {
+        if (typeAction === "stop") {
+          setIndexItem(null);
+          setTypeAction("");
+          toast.success("Hoàn tất dừng hoạt động !");
+          getModule();
+        } else if (typeAction === "edit") {
+          setIndexItem(null);
+          setTypeAction("");
+          toast.success("Hoàn tất chỉnh sửa !");
+          getModule();
+        } else if (typeAction === "open") {
+          setIndexItem(null);
+          setTypeAction("");
+          toast.success("Hoàn tất mở hoạt động !");
+          getModule();
+        }
       }
     } catch (error) {
       console.error("Lỗi:", error);
@@ -95,7 +183,7 @@ export default function Root() {
             ) : (
               <>
                 <CircleStackIcon className="w-6 h-6 mr-1" />
-                <span className="font-medium">Tạo mới</span>
+                <span className="font-medium">Đang xử lý</span>
               </>
             )}
           </button>
@@ -109,19 +197,198 @@ export default function Root() {
             {listModule.map((item, index) => (
               <div
                 key={index}
-                className="group flex items-center justify-between bg-indigo-700 text-white shadow-md p-4 rounded-md hover:bg-white hover:text-indigo-700 duration-200"
+                className={`relative group flex items-center justify-between shadow-md p-4 rounded-md duration-200
+        ${
+          item.mode === "inactive"
+            ? "bg-gray-400 text-white cursor-not-allowed"
+            : "bg-indigo-700 text-white hover:bg-white hover:text-indigo-700 cursor-pointer"
+        }
+      `}
                 onClick={() => {
-                  window.location.href = `/build?id=${encodeURIComponent(
-                    item.id
-                  )}`;
+                  if (item.mode !== "inactive") {
+                    window.location.href = `/build?id=${encodeURIComponent(
+                      item.id
+                    )}`;
+                  }
                 }}
               >
-                <span className="uppercase font-bold truncate">
-                  {item.name}
-                </span>
-                <div className="p-1 rounded-lg transition-colors duration-200 cursor-pointer hover:bg-indigo-700">
-                  <EllipsisVerticalIcon className="w-6 h-6 transition-colors duration-200 text-white group-hover:text-indigo-700 hover:text-white hover:!text-white" />
-                </div>
+                {index === indexItem && typeAction === "delete" ? (
+                  <div className="flex gap-2 justify-between w-full items-center">
+                    <TrashIcon className="w-6 h-6" />
+                    <button
+                      className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 w-[45%]"
+                      onClick={(e) => {
+                        deleteModule(item.id);
+                        e.stopPropagation();
+                      }}
+                    >
+                      Xác nhận
+                    </button>
+                    <button
+                      className="bg-white text-black border border-gray-300 px-3 pt-[2px] pb-[2px] rounded-lg hover:bg-gray-100 w-[45%]"
+                      onClick={(e) => {
+                        setIndexItem(null);
+                        setTypeAction("");
+                        e.stopPropagation();
+                      }}
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                ) : index === indexItem && typeAction === "stop" ? (
+                  <div className="flex gap-2 justify-between w-full items-center">
+                    <NoSymbolIcon className="w-6 h-6" />
+                    <button
+                      className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 w-[45%]"
+                      onClick={(e) => {
+                        handleAction(item.id);
+                        e.stopPropagation();
+                      }}
+                    >
+                      Xác nhận
+                    </button>
+                    <button
+                      className="bg-white text-black border border-gray-300 px-3 pt-[2px] pb-[2px] rounded-lg hover:bg-gray-100 w-[45%]"
+                      onClick={(e) => {
+                        setIndexItem(null);
+                        setTypeAction("");
+                        e.stopPropagation();
+                      }}
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                ) : index === indexItem && typeAction === "open" ? (
+                  <div className="flex gap-2 justify-between w-full items-center">
+                    <LockOpenIcon className="w-6 h-6" />
+                    <button
+                      className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 w-[45%]"
+                      onClick={(e) => {
+                        handleAction(item.id);
+                        e.stopPropagation();
+                      }}
+                    >
+                      Xác nhận
+                    </button>
+                    <button
+                      className="bg-white text-black border border-gray-300 px-3 pt-[2px] pb-[2px] rounded-lg hover:bg-gray-100 w-[45%]"
+                      onClick={(e) => {
+                        setIndexItem(null);
+                        setTypeAction("");
+                        e.stopPropagation();
+                      }}
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                ) : index === indexItem && typeAction === "edit" ? (
+                  <div className="flex gap-2 justify-between w-full items-center">
+                    <PencilSquareIcon className="w-6 h-6" />
+                    <input
+                      type="text"
+                      value={nameEdit}
+                      onChange={(e) => setNameEdit(e.currentTarget.value)}
+                      placeholder="Nhập tên hệ thống quản lý"
+                      className="py-[2.5px] px-2 mr-2 text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 w-[70%]"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                      className="bg-green-700 text-white px-3 pt-[4px] pb-[4px] rounded-lg hover:bg-green-600 w-[20%]"
+                      onClick={(e) => {
+                        handleAction(item.id);
+                        e.stopPropagation();
+                      }}
+                    >
+                      Lưu
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="uppercase font-bold truncate">
+                      {item.name}
+                    </span>
+                    <div
+                      className="p-1 rounded-lg transition-colors duration-200 cursor-pointer hover:bg-indigo-700"
+                      onClick={(e) => {
+                        setIndexItem(index);
+                        setIsClose(false);
+                        setTypeAction("");
+                        setNameEdit("");
+                        e.stopPropagation();
+                      }}
+                    >
+                      <EllipsisVerticalIcon className="w-6 h-6 transition-colors duration-200 text-white group-hover:text-indigo-700 hover:text-white hover:!text-white" />
+                    </div>
+                  </>
+                )}
+                {index === indexItem && !isClose ? (
+                  <div className="absolute top-full right-0 mt-2 z-10 bg-white/50 backdrop-blur-sm text-black shadow-lg rounded-md p-2">
+                    {item.mode === "inactive" ? (
+                      <div
+                        className="flex items-center rounded-md px-2 py-1 hover:bg-indigo-700 hover:text-white transition-colors duration-150 cursor-pointer"
+                        onClick={(e) => {
+                          setTypeAction("open");
+                          setIsClose(true);
+                          e.stopPropagation();
+                        }}
+                      >
+                        <LockOpenIcon className="w-6 h-6 mr-1" />
+                        <span className="font-semibold">Hoạt động</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div
+                          className="flex items-center rounded-md px-2 py-1 hover:bg-indigo-700 hover:text-white transition-colors duration-150 cursor-pointer"
+                          onClick={(e) => {
+                            setTypeAction("edit");
+                            setIsClose(true);
+                            setNameEdit(item.name);
+                            e.stopPropagation();
+                          }}
+                        >
+                          <PencilSquareIcon className="w-6 h-6 mr-1" />
+                          <span className="font-semibold">
+                            Sửa tên hệ thống
+                          </span>
+                        </div>
+                        <div
+                          className="flex items-center rounded-md px-2 py-1 hover:bg-indigo-700 hover:text-white transition-colors duration-150 cursor-pointer"
+                          onClick={(e) => {
+                            setTypeAction("stop");
+                            setIsClose(true);
+                            e.stopPropagation();
+                          }}
+                        >
+                          <NoSymbolIcon className="w-6 h-6 mr-1" />
+                          <span className="font-semibold">Dừng hoạt động</span>
+                        </div>
+                        <div
+                          className="flex items-center rounded-md px-2 py-1 hover:bg-indigo-700 hover:text-white transition-colors duration-150 cursor-pointer"
+                          onClick={(e) => {
+                            setTypeAction("delete");
+                            setIsClose(true);
+                            e.stopPropagation();
+                          }}
+                        >
+                          <TrashIcon className="w-6 h-6 mr-1" />
+                          <span className="font-semibold">Xóa hệ thống</span>
+                        </div>
+                      </>
+                    )}
+                    <div
+                      className="flex items-center rounded-md px-2 py-1 hover:bg-indigo-700 hover:text-white transition-colors duration-150 cursor-pointer"
+                      onClick={(e) => {
+                        setIndexItem(null);
+                        e.stopPropagation();
+                      }}
+                    >
+                      <XMarkIcon className="w-6 h-6 mr-1" />
+                      <span className="font-semibold">Đóng</span>
+                    </div>
+                  </div>
+                ) : (
+                  <></>
+                )}
               </div>
             ))}
           </div>
