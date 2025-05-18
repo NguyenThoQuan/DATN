@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "regenerator-runtime/runtime";
 import { FaFacebookF, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
@@ -180,8 +180,8 @@ export default function Root() {
         toast.success("Đăng nhập thành công !");
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("userLogin", JSON.stringify(data.user));
-        window.location.pathname = "/";
-        localStorage.setItem("activeNavItem", "Trang chủ");
+        window.location.pathname = "/service";
+        localStorage.setItem("activeNavItem", "Quản lý");
       }
     } catch (error) {
       console.error("Lỗi đăng nhập:", error);

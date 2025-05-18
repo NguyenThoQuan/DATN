@@ -10,7 +10,6 @@ const Root = () => {
   const profileRef = useRef(null);
 
   const navItems = [
-    { name: "Trang chủ", path: "/" },
     { name: "Quản lý", path: "/service" },
     { name: "Quản trị", path: "/admin" },
     { name: "Tài khoản", path: "/inforuser" },
@@ -39,7 +38,10 @@ const Root = () => {
     <nav className="bg-white shadow-md fixed w-full z-[1000] isolate top-0 noneNav">
       <div className="max-w-9/10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex items-center">
+          <div
+            className="flex items-center"
+            onClick={() => localStorage.removeItem("activeNavItem")}
+          >
             <a href="/">
               <div className="flex-shrink-0 flex items-center">
                 <img className="w-[40px]" src={logo} alt="Logo" />
@@ -52,7 +54,8 @@ const Root = () => {
 
           <div className="hidden md:ml-6 md:flex md:items-center md:space-x-1">
             {localStorage.getItem("token") &&
-            localStorage.getItem("token") !== "undefined" ? (
+            localStorage.getItem("token") !== "undefined" &&
+            localStorage.getItem("userLogin") ? (
               navItems
                 .filter((item) => item.path !== "/account")
                 .map((item) => (

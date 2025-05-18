@@ -9,8 +9,17 @@ const Banner = () => {
   const fullName = "EvoERP";
 
   const handleStart = () => {
-    window.location.pathname = "/service";
-    localStorage.setItem("activeNavItem", "Dịch vụ");
+    if (
+      localStorage.getItem("token") &&
+      localStorage.getItem("token") !== "undefined" &&
+      localStorage.getItem("userLogin")
+    ) {
+      window.location.pathname = "/service";
+      localStorage.setItem("activeNavItem", "Quản lý");
+    } else {
+      window.location.pathname = "/account";
+      localStorage.setItem("activeNavItem", "Tài khoản");
+    }
   };
 
   useEffect(() => {
