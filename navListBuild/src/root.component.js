@@ -1,7 +1,7 @@
 import "./index.css";
 import { useEffect, useState } from "react";
 import "regenerator-runtime/runtime";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaCheck } from "react-icons/fa";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa6";
 import {
   TbLayoutSidebarLeftCollapse,
@@ -13,26 +13,21 @@ import logo from "./assets/logo-evoerp.png";
 export default function Root() {
   const [id, setId] = useState();
   const [dataBuild, setDataBuild] = useState();
+  console.log(dataBuild);
+
+  const handleChangeValue = (value, key) => {
+    setDataBuild((prevData) => ({ ...prevData, [key]: value }));
+  };
 
   const [open, setOpen] = useState(true);
   const [subMenus, setSubMenus] = useState({
-    calendar: false,
-    support: false,
-    tables: false,
-    analytics: false,
+    regime: false,
   });
-
-  const toggleSubMenu = (menu) => {
-    setSubMenus((prev) => ({
-      ...prev,
-      [menu]: !prev[menu],
-    }));
-  };
-
   const Menus = [
     {
       title: "Bảng danh sách",
       icon: <GrTableAdd />,
+      value: "tableList",
     },
     {
       title: "Chế độ",
@@ -42,8 +37,22 @@ export default function Root() {
     },
   ];
 
-  const handleChangeValue = (value, key) => {
-    setDataBuild((prevData) => ({ ...prevData, [key]: value }));
+  const toggleSubMenu = (menu) => {
+    setSubMenus((prev) => ({
+      ...prev,
+      [menu]: !prev[menu],
+    }));
+  };
+
+  const selectModule = (module) => {
+    let build = localStorage.getItem("buildModule")
+      ? JSON.parse(localStorage.getItem("buildModule"))
+      : {};
+
+    if (module === "tableList") {
+      build.tableList = "on";
+      localStorage.setItem("buildModule", JSON.stringify(build));
+    }
   };
 
   const getModule = async (id) => {
@@ -83,19 +92,27 @@ export default function Root() {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (dataBuild?.mode === "user") {
+      setOpen(false);
+    }
+  }, [dataBuild]);
+
   return (
     <>
-      <div className="w-full flex">
+      <div className="w-full flex relative">
         <div
           className={`${
             open ? "w-72 p-5" : "w-20 p-4"
-          } bg-indigo-700 h-screen pt-8 relative duration-300 ease-in-out`}
+          } bg-indigo-700 h-[calc(100vh-65px)] pt-8 relative duration-300 ease-in-out`}
         >
           <div
             className={`absolute cursor-pointer -right-4 top-9 w-8 h-8 p-0.5 bg-zinc-50 border-zinc-50 border-2 rounded-full text-xl flex items-center justify-center ${
               !open && "rotate-180"
             } transition-all ease-in-out duration-300`}
-            onClick={() => setOpen(!open)}
+            onClick={() => {
+              setOpen(!open);
+            }}
           >
             {open ? (
               <TbLayoutSidebarLeftExpand />
@@ -109,7 +126,7 @@ export default function Root() {
               src={logo}
               alt="logo"
               className={`w-10 h-10 rounded-full object-cover object-center cursor-pointer ease-in-out duration-3 ${
-                open && "rotate-[360deg]"
+                open ? "rotate-[360deg]" : "pl-[2.5px]"
               }`}
             />
             <h1
@@ -128,7 +145,10 @@ export default function Root() {
                 className={`flex flex-col rounded-md py-3 px-4 cursor-pointer hover:text-white text-zinc-50 hover:bg-zinc-800/50 transition-all ease-in-out duration-300 ${
                   Menu.gap ? "mt-9" : "mt-2"
                 }`}
-                onClick={() => setOpen(true)}
+                onClick={() => {
+                  setOpen(true);
+                  selectModule(Menu.value);
+                }}
               >
                 <div
                   className="flex items-center justify-between gap-x-4"
@@ -167,7 +187,16 @@ export default function Root() {
                     {Menu.subMenu.map((subMenu, subIndex) => (
                       <li
                         key={subIndex}
-                        className="text-sm flex items-center gap-x-2 py-3 px-2 hover:bg-zinc-800 rounded-lg"
+                        className={`text-sm flex items-center gap-x-2 py-3 px-2 hover:bg-zinc-800 rounded-lg ${
+                          open ? "" : "hidden"
+                        }`}
+                        onClick={() => {
+                          if (subMenu === "Chỉnh sửa") {
+                            handleChangeValue("edit", "mode");
+                          } else if (subMenu === "Người dùng") {
+                            handleChangeValue("user", "mode");
+                          }
+                        }}
                       >
                         <span className="text-zinc-4">
                           <FaChevronRight className="text-xs" />
@@ -180,6 +209,17 @@ export default function Root() {
               </li>
             ))}
           </ul>
+        </div>
+        <div className="absolute bottom-0 flex justify-center w-full p-2">
+          {open ? (
+            <button className="bg-white text-indigo-700 px-4 py-2 rounded w-full font-bold transition duration-200 hover:bg-indigo-700 hover:text-white hover:border hover:border-white hover:border-2">
+              Lưu tùy chỉnh
+            </button>
+          ) : (
+            <div className="text-sm flex items-center py-3 px-4 hover:bg-zinc-800/50 transition-all ease-in-out duration-300 rounded-lg text-white cursor-pointer">
+              <FaCheck />
+            </div>
+          )}
         </div>
       </div>
     </>
