@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { sharedState } from "shared-state";
+import "./index.css";
+import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 
 export default function Root() {
-  const [build, setBuild] = useState(sharedState.data); // Khởi tạo với object
+  const [build, setBuild] = useState(sharedState.data);
 
   useEffect(() => {
     const handleSharedStateUpdate = (event) => {
-      setBuild(event.detail); // Cập nhật state với object mới
+      setBuild(event.detail);
     };
 
     window.addEventListener("sharedState:updated", handleSharedStateUpdate);
@@ -19,13 +21,5 @@ export default function Root() {
     };
   }, []);
 
-  return (
-    <div>
-      {build.tableList === "on" ? (
-        <div>1 - Table List is ON</div>
-      ) : (
-        <div>2 - Table List is OFF</div>
-      )}
-    </div>
-  );
+  return <div></div>;
 }
