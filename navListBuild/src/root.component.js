@@ -9,6 +9,7 @@ import {
 } from "react-icons/tb";
 import { GrTableAdd } from "react-icons/gr";
 import logo from "./assets/logo-evoerp.png";
+import { sharedStateTableList } from "shared-state";
 
 export default function Root() {
   const [id, setId] = useState();
@@ -45,13 +46,8 @@ export default function Root() {
   };
 
   const selectModule = (module) => {
-    let build = localStorage.getItem("buildModule")
-      ? JSON.parse(localStorage.getItem("buildModule"))
-      : {};
-
     if (module === "tableList") {
-      build.tableList = "on";
-      localStorage.setItem("buildModule", JSON.stringify(build));
+      sharedStateTableList.setData("on");
     }
   };
 
