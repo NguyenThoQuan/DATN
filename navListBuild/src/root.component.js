@@ -28,7 +28,9 @@ export default function Root() {
     {
       title: "Bảng danh sách",
       icon: <GrTableAdd />,
+      subMenu: ["Tạo bảng", "Thêm mới", "Chỉnh sửa", "Xóa", "Xuất Excel"],
       value: "tableList",
+      key: "tableList",
     },
     {
       title: "Chế độ",
@@ -46,7 +48,7 @@ export default function Root() {
   };
 
   const selectModule = (module) => {
-    if (module === "tableList") {
+    if (module === "Tạo bảng") {
       sharedState.setData({ tableList: "on" });
     }
   };
@@ -105,7 +107,7 @@ export default function Root() {
           <div
             className={`absolute cursor-pointer -right-4 top-9 w-8 h-8 p-0.5 bg-zinc-50 border-zinc-50 border-2 rounded-full text-xl flex items-center justify-center ${
               !open && "rotate-180"
-            } transition-all ease-in-out duration-300`}
+            } transition-all ease-in-out duration-300 z-[1000]`}
             onClick={() => {
               setOpen(!open);
             }}
@@ -143,7 +145,6 @@ export default function Root() {
                 }`}
                 onClick={() => {
                   setOpen(true);
-                  selectModule(Menu.value);
                 }}
               >
                 <div
@@ -191,6 +192,8 @@ export default function Root() {
                             handleChangeValue("edit", "mode");
                           } else if (subMenu === "Người dùng") {
                             handleChangeValue("user", "mode");
+                          } else {
+                            selectModule(subMenu);
                           }
                         }}
                       >
