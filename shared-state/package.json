@@ -1,5 +1,8 @@
 {
   "name": "shared-state",
   "version": "1.0.0",
-  "main": "index.js"
+  "main": "index.js",
+  "dependencies": {
+    "@babel/runtime": "^7.27.1"
+  }
 }

@@ -9,7 +9,7 @@ import {
 } from "react-icons/tb";
 import { GrTableAdd } from "react-icons/gr";
 import logo from "./assets/logo-evoerp.png";
-import { sharedStateTableList } from "shared-state";
+import { sharedState } from "shared-state";
 
 export default function Root() {
   const [id, setId] = useState();
@@ -47,7 +47,7 @@ export default function Root() {
 
   const selectModule = (module) => {
     if (module === "tableList") {
-      sharedStateTableList.setData("on");
+      sharedState.setData({ tableList: "on" });
     }
   };
 

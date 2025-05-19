@@ -1,7 +1,7 @@
-export const sharedStateTableList = {
-  data: "Dữ liệu ban đầu",
+export const sharedState = {
+  data: { tableList: "off" },
   setData(newData) {
-    this.data = newData;
+    this.data = { ...this.data, ...newData };
     window.dispatchEvent(
       new CustomEvent("sharedState:updated", { detail: this.data })
     );
