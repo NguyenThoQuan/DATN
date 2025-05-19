@@ -9,12 +9,13 @@ import {
 } from "react-icons/tb";
 import { GrTableAdd } from "react-icons/gr";
 import logo from "./assets/logo-evoerp.png";
-import { sharedState } from "shared-state";
+import { sharedStateTableList } from "shared-state";
 
 export default function Root() {
   const [id, setId] = useState();
   const [dataBuild, setDataBuild] = useState();
-  console.log(dataBuild);
+  const [dataTableListBuild, setDataTableListBuild] = useState();
+  console.log(dataTableListBuild);
 
   const handleChangeValue = (value, key) => {
     setDataBuild((prevData) => ({ ...prevData, [key]: value }));
@@ -49,7 +50,7 @@ export default function Root() {
 
   const selectModule = (module) => {
     if (module === "Tạo bảng") {
-      sharedState.setData({ tableList: "on" });
+      sharedStateTableList.setData({ tableListMode: "on" });
     }
   };
 
@@ -95,6 +96,24 @@ export default function Root() {
       setOpen(false);
     }
   }, [dataBuild]);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setDataTableListBuild(event.detail || {});
+    };
+
+    window.addEventListener(
+      "sharedStateTableListBuild:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateTableListBuild:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
 
   return (
     <>

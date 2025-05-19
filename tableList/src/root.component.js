@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { sharedState } from "shared-state";
+import { sharedStateTableList, sharedStateTableListBuild } from "shared-state";
 import "./index.css";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import {
@@ -9,15 +9,16 @@ import {
 } from "@tabler/icons-react";
 import { Divider } from "@mantine/core";
 import toast, { Toaster } from "react-hot-toast";
+import "regenerator-runtime/runtime";
 
 export default function Root() {
-  const [build, setBuild] = useState(sharedState.data || {});
+  const [id, setId] = useState();
+  const [build, setBuild] = useState(sharedStateTableList.tableListMode || {});
   const [data, setData] = useState([]);
   const [dataColumn, setDataColumn] = useState([]);
   const [col, setCol] = useState({ accessorKey: "", header: "" });
   const [isCheckAK, setIsCheckAK] = useState(true);
   const [isOpenEdit, setIsOpenEdit] = useState(true);
-  console.log(isOpenEdit);
 
   const columns = useMemo(() => {
     if (!dataColumn || !Array.isArray(dataColumn)) return [];
@@ -96,21 +97,38 @@ export default function Root() {
       setBuild(event.detail || {});
     };
 
-    window.addEventListener("sharedState:updated", handleSharedStateUpdate);
+    window.addEventListener(
+      "sharedStateTableList:updated",
+      handleSharedStateUpdate
+    );
 
     return () => {
       window.removeEventListener(
-        "sharedState:updated",
+        "sharedStateTableList:updated",
         handleSharedStateUpdate
       );
     };
+  }, []);
+
+  useEffect(() => {
+    if (dataColumn.length > 0) {
+      sharedStateTableListBuild.setData({ dataColumn: dataColumn });
+    }
+  }, [dataColumn]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const idFromUrl = params.get("id");
+    if (idFromUrl) {
+      setId(decodeURIComponent(idFromUrl));
+    }
   }, []);
 
   return (
     <>
       <Toaster />
       <div
-        className={`${build.tableList === "on" ? "" : "hidden"} ${
+        className={`${build.tableListMode === "on" ? "" : "hidden"} ${
           isOpenEdit ? "grid grid-cols-1 lg:grid-cols-3" : "flex justify-end"
         } gap-2 w-[100%] lg:h-[calc(100vh-75px)]`}
       >
@@ -118,7 +136,7 @@ export default function Root() {
           <MantineReactTable table={table} />
         </div>
         <div
-          className={`p-2 bg-indigo-50 rounded-lg shadow col-span-1 w-full transition-all duration-300 overflow-hidden ${
+          className={`relative p-2 bg-indigo-50 rounded-lg shadow col-span-1 w-full transition-all duration-300 overflow-hidden ${
             isOpenEdit ? "w-full" : "w-[45px] flex items-center justify-center"
           }`}
         >
@@ -239,6 +257,20 @@ export default function Root() {
               onClick={() => setIsOpenEdit(true)}
             />
           )}
+          <div
+            className="absolute bottom-0 flex justify-center w-full py-2 pr-4"
+            onClick={() =>
+              sharedStateTableList.setData({ tableListMode: "off" })
+            }
+          >
+            <button
+              className={`${
+                isOpenEdit ? "" : "hidden"
+              } bg-indigo-700 text-white px-4 py-2 rounded w-full font-bold transition duration-200 hover:bg-white hover:text-indigo-700 hover:border hover:border-indigo-700 hover:border-2`}
+            >
+              Xóa
+            </button>
+          </div>
         </div>
       </div>
     </>
