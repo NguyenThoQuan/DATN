@@ -115,7 +115,7 @@ export default function Root() {
         <div className="p-2 bg-indigo-50 rounded-lg shadow col-span-1 w-full">
           <div className="flex justify-between items-center w-full">
             <IconChevronRight
-              className="text-indigo-700 p-1 hover:bg-indigo-800 hover:text-white cursor-pointer rounded-3xl duration-200"
+              className="text-indigo-700 p-1 hover:bg-indigo-800 hover:text-white cursor-pointer rounded-3xl duration-200 hidden lg:block"
               onClick={() => setIsOpenEdit(false)}
             />
             <h2 className="text-xl font-bold text-indigo-700 uppercase">
