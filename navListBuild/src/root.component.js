@@ -7,6 +7,7 @@ import {
   TbLayoutSidebarLeftCollapse,
   TbLayoutSidebarLeftExpand,
 } from "react-icons/tb";
+import { GrTableAdd } from "react-icons/gr";
 import logo from "./assets/logo-evoerp.png";
 
 export default function Root() {
@@ -29,6 +30,10 @@ export default function Root() {
   };
 
   const Menus = [
+    {
+      title: "Bảng danh sách",
+      icon: <GrTableAdd />,
+    },
     {
       title: "Chế độ",
       icon: <FaEye />,
