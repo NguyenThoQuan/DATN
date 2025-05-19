@@ -7,6 +7,7 @@ import {
   TrashIcon,
   XMarkIcon,
   LockOpenIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/solid";
 import "regenerator-runtime/runtime";
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ import toast, { Toaster } from "react-hot-toast";
 export default function Root() {
   const [nameModule, setNameModule] = useState("");
   const [nameEdit, setNameEdit] = useState("");
+  const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [listModule, setListModule] = useState();
   const [indexItem, setIndexItem] = useState();
@@ -22,16 +24,19 @@ export default function Root() {
   const [isClose, setIsClose] = useState(true);
 
   const getModule = async () => {
+    let url = "http://localhost:3000/api/build?_sort=mode";
+
+    if (search.length > 0) {
+      url += `&name_like=${search}`;
+    }
+
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/build?_sort=mode",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       const data = await response.json();
 
@@ -158,16 +163,16 @@ export default function Root() {
         <h1 className="text-2xl font-bold mb-4 text-indigo-700">
           Tạo hệ thống quản lý mới
         </h1>
-        <div className="flex items-center rounded-[10px] bg-indigo-100 p-4 hover:bg-indigo-200 transition-colors">
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 items-center rounded-[10px] bg-indigo-100 p-4 hover:bg-indigo-200 transition-colors">
           <input
             type="text"
             value={nameModule}
             onChange={(e) => setNameModule(e.currentTarget.value)}
             placeholder="Nhập tên hệ thống quản lý"
-            className="w-[80%] p-2 mr-2 text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="p-2 col-span-1 lg:col-span-5 text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <button
-            className={`w-[20%] flex items-center justify-center p-2 rounded-md transition-colors ${
+            className={`flex items-center justify-center p-2 rounded-md transition-colors ${
               nameModule.length === 0 || isLoading
                 ? "bg-gray-400 text-gray-200 cursor-not-allowed"
                 : "bg-indigo-700 text-white hover:bg-indigo-800"
@@ -188,9 +193,27 @@ export default function Root() {
             )}
           </button>
         </div>
-        <h1 className="text-2xl font-bold mb-4 text-indigo-700 mt-4">
-          Các hệ thống quản lý hiện có
-        </h1>
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-center py-2">
+          <h1 className="text-2xl font-bold mb-4 text-indigo-700 mt-4">
+            Các hệ thống quản lý hiện có
+          </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 items-center rounded-[10px] bg-indigo-100 p-2 hover:bg-indigo-200 transition-colors">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              placeholder="Nhập tên hệ thống quản lý"
+              className="col-span-1 lg:col-span-5 p-2 text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <button
+              className="flex items-center justify-center p-2 rounded-md transition-colors bg-indigo-700 text-white hover:bg-indigo-800 col-span-1 lg:col-span-2"
+              onClick={() => getModule()}
+            >
+              <MagnifyingGlassIcon className="w-6 h-6 mr-1" />
+              <span className="font-medium">Tìm kiếm</span>
+            </button>
+          </div>
+        </div>
 
         {listModule && listModule.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xs:grid-cols-1 cursor-pointer">
