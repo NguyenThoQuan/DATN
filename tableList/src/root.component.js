@@ -115,7 +115,7 @@ export default function Root() {
 
   useEffect(() => {
     const handleSharedStateUpdate = (event) => {
-      setDataColumn(event.detail?.dataColumn || {});
+      setDataColumn(event.detail?.dataColumn || []);
     };
 
     window.addEventListener(

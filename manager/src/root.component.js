@@ -17,8 +17,11 @@ export default function Root() {
   const [nameModule, setNameModule] = useState("");
   const [nameEdit, setNameEdit] = useState("");
   const [search, setSearch] = useState("");
+  const [searchCollab, setSearchCollab] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [listModule, setListModule] = useState();
+  const [listModuleCollab, setListModuleCollab] = useState();
+  console.log(listModuleCollab);
   const [indexItem, setIndexItem] = useState();
   const [typeAction, setTypeAction] = useState();
   const [isClose, setIsClose] = useState(true);
@@ -45,6 +48,34 @@ export default function Root() {
         toast.error("Có lỗi xảy ra ở máy chủ !");
       } else {
         setListModule(data);
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
+  };
+
+  const getModuleCollab = async () => {
+    const idUser = JSON.parse(localStorage.getItem("userLogin"))?.id;
+    let url = `http://localhost:3000/api/build/collab/${idUser}`;
+
+    if (searchCollab.length > 0) {
+      url += `?keySearch=${searchCollab}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Có lỗi xảy ra ở máy chủ !");
+      } else {
+        setListModuleCollab(data?.data);
       }
     } catch (error) {
       console.error("Lỗi:", error);
@@ -166,6 +197,7 @@ export default function Root() {
 
   useEffect(() => {
     getModule();
+    getModuleCollab();
   }, []);
 
   return (
@@ -443,14 +475,46 @@ export default function Root() {
             <input
               type="text"
               placeholder="Nhập tên hệ thống quản lý"
+              value={searchCollab}
+              onChange={(e) => setSearchCollab(e.currentTarget.value)}
               className="col-span-1 lg:col-span-5 p-2 text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            <button className="flex items-center justify-center p-2 rounded-md transition-colors bg-indigo-700 text-white hover:bg-indigo-800 col-span-1 lg:col-span-2">
+            <button
+              className="flex items-center justify-center p-2 rounded-md transition-colors bg-indigo-700 text-white hover:bg-indigo-800 col-span-1 lg:col-span-2"
+              onClick={() => getModuleCollab()}
+            >
               <MagnifyingGlassIcon className="w-6 h-6 mr-1" />
               <span className="font-medium">Tìm kiếm</span>
             </button>
           </div>
         </div>
+        {listModuleCollab && listModuleCollab.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xs:grid-cols-1">
+            {listModuleCollab.map((item, index) => (
+              <div
+                key={index}
+                className={
+                  "group shadow-md p-4 rounded-md duration-200 bg-indigo-700 text-white hover:bg-white hover:text-indigo-700 cursor-pointer"
+                }
+                onClick={() => {
+                  window.location.href = `/build?id=${encodeURIComponent(
+                    item.id
+                  )}`;
+                }}
+              >
+                <span className="uppercase font-bold truncate">
+                  {item.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <h1 className="text-1xl font-bold mb-4 mt-4 text-gray-500 italic text-center max-w-3xl">
+              Bạn chưa được thêm vào hệ thống quản lý khác nào !
+            </h1>
+          </div>
+        )}
       </div>
     </>
   );
