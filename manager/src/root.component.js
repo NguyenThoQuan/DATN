@@ -228,7 +228,7 @@ export default function Root() {
         </div>
 
         {listModule && listModule.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xs:grid-cols-1 cursor-pointer">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xs:grid-cols-1">
             {listModule.map((item, index) => (
               <div
                 key={index}
