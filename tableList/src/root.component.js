@@ -15,7 +15,10 @@ export default function Root() {
   const [id, setId] = useState();
   const [build, setBuild] = useState(sharedStateTableList.tableListMode || {});
   const [data, setData] = useState([]);
-  const [dataColumn, setDataColumn] = useState([]);
+  const [dataColumn, setDataColumn] = useState(
+    sharedStateTableListBuild.dataColumn || []
+  );
+  console.log(dataColumn);
   const [col, setCol] = useState({ accessorKey: "", header: "" });
   const [isCheckAK, setIsCheckAK] = useState(true);
   const [isOpenEdit, setIsOpenEdit] = useState(true);
@@ -105,6 +108,24 @@ export default function Root() {
     return () => {
       window.removeEventListener(
         "sharedStateTableList:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setDataColumn(event.detail?.dataColumn || {});
+    };
+
+    window.addEventListener(
+      "sharedStateTableListBuild:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateTableListBuild:updated",
         handleSharedStateUpdate
       );
     };

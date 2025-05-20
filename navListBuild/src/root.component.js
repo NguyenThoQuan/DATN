@@ -1,7 +1,7 @@
 import "./index.css";
 import { useEffect, useState } from "react";
 import "regenerator-runtime/runtime";
-import { FaEye, FaCheck } from "react-icons/fa";
+import { FaEye, FaCheck, FaEllipsisH } from "react-icons/fa";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa6";
 import {
   TbLayoutSidebarLeftCollapse,
@@ -9,13 +9,14 @@ import {
 } from "react-icons/tb";
 import { GrTableAdd } from "react-icons/gr";
 import logo from "./assets/logo-evoerp.png";
-import { sharedStateTableList } from "shared-state";
+import { sharedStateTableList, sharedStateTableListBuild } from "shared-state";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Root() {
   const [id, setId] = useState();
   const [dataBuild, setDataBuild] = useState();
   const [dataTableListBuild, setDataTableListBuild] = useState();
-  console.log(dataTableListBuild);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChangeValue = (value, key) => {
     setDataBuild((prevData) => ({ ...prevData, [key]: value }));
@@ -71,9 +72,45 @@ export default function Root() {
         return;
       } else {
         setDataBuild(data[0]);
+        sharedStateTableList.setData({ tableListMode: data[0]?.tableList });
+        sharedStateTableListBuild.setData({ dataColumn: data[0]?.dataColumn });
       }
     } catch (error) {
       console.error("Lỗi:", error);
+    }
+  };
+
+  const updateModule = async () => {
+    setIsLoading(true);
+    try {
+      const url = `http://localhost:3000/api/build/${id}`;
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tableList: sharedStateTableList.data?.tableListMode,
+          dataColumn: dataTableListBuild?.dataColumn || [],
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Có lỗi xảy ra ở máy chủ!");
+        return;
+      } else {
+        setIsLoading(false);
+        setTimeout(() => {
+          window.location.href = "/service";
+        }, 1000);
+        toast.success("Hoàn tất lưu tùy chỉnh !");
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,6 +154,7 @@ export default function Root() {
 
   return (
     <>
+      <Toaster />
       <div className="w-full flex relative">
         <div
           className={`${
@@ -230,12 +268,23 @@ export default function Root() {
         </div>
         <div className="absolute bottom-0 flex justify-center w-full p-2">
           {open ? (
-            <button className="bg-white text-indigo-700 px-4 py-2 rounded w-full font-bold transition duration-200 hover:bg-indigo-700 hover:text-white hover:border hover:border-white hover:border-2">
-              Lưu tùy chỉnh
+            <button
+              className={`${
+                isLoading ? "cursor-not-allowed" : ""
+              } bg-white text-indigo-700 px-4 py-2 rounded w-full font-bold transition duration-200 hover:bg-indigo-700 hover:text-white hover:border hover:border-white hover:border-2`}
+              disabled={isLoading}
+              onClick={() => updateModule()}
+            >
+              {isLoading ? "Đang lưu ..." : "Lưu tùy chỉnh"}
             </button>
           ) : (
-            <div className="text-sm flex items-center py-3 px-4 hover:bg-zinc-800/50 transition-all ease-in-out duration-300 rounded-lg text-white cursor-pointer">
-              <FaCheck />
+            <div
+              className={`${
+                isLoading ? "cursor-not-allowed" : ""
+              } text-sm flex items-center py-3 px-4 hover:bg-zinc-800/50 transition-all ease-in-out duration-300 rounded-lg text-white cursor-pointer`}
+              onClick={() => updateModule()}
+            >
+              {isLoading ? <FaEllipsisH /> : <FaCheck />}
             </div>
           )}
         </div>
