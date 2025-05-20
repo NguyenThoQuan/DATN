@@ -8,6 +8,8 @@ import {
   XMarkIcon,
   LockOpenIcon,
   MagnifyingGlassIcon,
+  WrenchScrewdriverIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/solid";
 import "regenerator-runtime/runtime";
 import { useEffect, useState } from "react";
@@ -371,6 +373,15 @@ export default function Root() {
                   </div>
                 ) : (
                   <>
+                    {item.mode === "edit" ? (
+                      <WrenchScrewdriverIcon className="w-6 h-6" />
+                    ) : item.mode === "user" ? (
+                      <UserCircleIcon className="w-6 h-6" />
+                    ) : item.mode === "inactive" ? (
+                      <NoSymbolIcon className="w-6 h-6" />
+                    ) : (
+                      <></>
+                    )}
                     <span className="uppercase font-bold truncate">
                       {item.name}
                     </span>
@@ -494,7 +505,7 @@ export default function Root() {
               <div
                 key={index}
                 className={
-                  "group shadow-md p-4 rounded-md duration-200 bg-indigo-700 text-white hover:bg-white hover:text-indigo-700 cursor-pointer"
+                  "group flex justify-between items-center shadow-md p-4 rounded-md duration-200 bg-indigo-700 text-white hover:bg-white hover:text-indigo-700 cursor-pointer"
                 }
                 onClick={() => {
                   window.location.href = `/build?id=${encodeURIComponent(
@@ -502,9 +513,19 @@ export default function Root() {
                   )}`;
                 }}
               >
+                {item.mode === "edit" ? (
+                  <WrenchScrewdriverIcon className="w-6 h-6" />
+                ) : item.mode === "user" ? (
+                  <UserCircleIcon className="w-6 h-6" />
+                ) : item.mode === "inactive" ? (
+                  <NoSymbolIcon className="w-6 h-6" />
+                ) : (
+                  <></>
+                )}
                 <span className="uppercase font-bold truncate">
                   {item.name}
                 </span>
+                <div></div>
               </div>
             ))}
           </div>

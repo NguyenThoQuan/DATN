@@ -9,12 +9,17 @@ import {
 } from "react-icons/tb";
 import { GrTableAdd } from "react-icons/gr";
 import logo from "./assets/logo-evoerp.png";
-import { sharedStateTableList, sharedStateTableListBuild } from "shared-state";
+import {
+  sharedStateTableList,
+  sharedStateTableListBuild,
+  sharedStateMode,
+} from "shared-state";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Root() {
   const [id, setId] = useState();
   const [dataBuild, setDataBuild] = useState();
+  console.log(dataBuild);
   const [dataTableListBuild, setDataTableListBuild] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -72,6 +77,7 @@ export default function Root() {
         return;
       } else {
         setDataBuild(data[0]);
+        sharedStateMode.setData({ mode: data[0]?.mode });
         sharedStateTableList.setData({ tableListMode: data[0]?.tableList });
         sharedStateTableListBuild.setData({ dataColumn: data[0]?.dataColumn });
       }
@@ -90,6 +96,7 @@ export default function Root() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          mode: dataBuild?.mode,
           tableList: sharedStateTableList.data?.tableListMode,
           dataColumn: dataTableListBuild?.dataColumn || [],
         }),
@@ -155,7 +162,16 @@ export default function Root() {
   return (
     <>
       <Toaster />
-      <div className="w-full flex relative">
+      <div
+        className={`${
+          dataBuild?.createById &&
+          dataBuild?.createById !==
+            JSON.parse(localStorage.getItem("userLogin")).id &&
+          dataBuild.mode === "user"
+            ? "hidden"
+            : ""
+        } w-full flex relative`}
+      >
         <div
           className={`${
             open ? "w-72 p-5" : "w-20 p-4"
@@ -194,7 +210,17 @@ export default function Root() {
           </div>
 
           <ul className="pt-6 space-y-0.5">
-            {Menus.map((Menu, index) => (
+            {Menus.filter((item) => {
+              if (
+                dataBuild?.createById &&
+                dataBuild?.createById !==
+                  JSON.parse(localStorage.getItem("userLogin")).id
+              ) {
+                return item.key !== "regime";
+              }
+
+              return true;
+            }).map((Menu, index) => (
               <li
                 key={index}
                 className={`flex flex-col rounded-md py-3 px-4 cursor-pointer hover:text-white text-zinc-50 hover:bg-zinc-800/50 transition-all ease-in-out duration-300 ${
@@ -247,8 +273,10 @@ export default function Root() {
                         onClick={() => {
                           if (subMenu === "Chỉnh sửa") {
                             handleChangeValue("edit", "mode");
+                            sharedStateMode.setData({ mode: "edit" });
                           } else if (subMenu === "Người dùng") {
                             handleChangeValue("user", "mode");
+                            sharedStateMode.setData({ mode: "user" });
                           } else {
                             selectModule(subMenu);
                           }

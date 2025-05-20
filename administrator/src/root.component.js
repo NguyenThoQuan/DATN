@@ -3,18 +3,29 @@ import logo from "./images/logo-evoerp.png";
 import "regenerator-runtime/runtime";
 import "./index.css";
 import toast, { Toaster } from "react-hot-toast";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import {
+  MagnifyingGlassIcon,
+  UserCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
 import { Divider, Menu, Text } from "@mantine/core";
 import { useDebouncedState } from "@mantine/hooks";
 
 export default function Root() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const [activeTab, setActiveTab] = useState("moduleManager");
   const [activeFunc, setActiveFunc] = useState("addManager");
   const [listModule, setListModule] = useState();
   const [moduleManager, setModuleManager] = useState();
   const [dataUser, setDataUser] = useState([]);
+  const [listUserAdd, setListUserAdd] = useState([]);
   const [search, setSearch] = useState("");
   const [searchUser, setSearchUser] = useDebouncedState("", 300);
+
+  const handleDeleteListUserAdd = (email) => {
+    setListUserAdd((prev) => prev.filter((item) => item.email !== email));
+  };
 
   const getModule = async () => {
     const idUser = JSON.parse(localStorage.getItem("userLogin"))?.id;
@@ -69,6 +80,36 @@ export default function Root() {
       }
     } catch (error) {
       console.error("Lỗi:", error);
+    }
+  };
+
+  const addCollab = async () => {
+    setIsLoading(true);
+    try {
+      const url = `http://localhost:3000/api/build/${moduleManager?.id}`;
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          collab: listUserAdd,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Có lỗi xảy ra ở máy chủ!");
+        return;
+      } else {
+        setIsLoading(false);
+        toast.success("Hoàn tất thêm người quản lý !");
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -150,7 +191,12 @@ export default function Root() {
                             : "bg-indigo-700 text-white hover:bg-white hover:text-indigo-700 cursor-pointer"
                         }
                       `}
-                      onClick={() => setModuleManager(item)}
+                      onClick={() => {
+                        setModuleManager(item);
+                        if (item.collab) {
+                          setListUserAdd(item.collab);
+                        }
+                      }}
                     >
                       <span className="uppercase font-bold truncate text-sm">
                         {item.name}
@@ -185,14 +231,14 @@ export default function Root() {
                         className="bg-white text-indigo-700 border border-indigo-700 hover:bg-indigo-700 hover:text-white hover:border-white cursor-pointer text-center shadow-md p-1 rounded-md duration-200"
                       >
                         <span className="font-bold truncate text-sm">
-                          {item === "addManager" && "Thêm quản lý"}
+                          {item === "addManager" && "Thêm nhân viên"}
                           {item === "decentralization" &&
                             "Phân quyền chức năng"}
                         </span>
                       </div>
                     ))}
                   </div>
-                  <div className="w-[80%] border border-indigo-700 shadow-md p-2 rounded-lg duration-200">
+                  <div className="relative w-[80%] border border-indigo-700 shadow-md p-2 rounded-lg duration-200">
                     {activeFunc === "addManager" && (
                       <>
                         <div className="flex items-center rounded-[10px] bg-indigo-100 p-2 hover:bg-indigo-200 transition-colors">
@@ -221,6 +267,16 @@ export default function Root() {
                                   <Menu.Item
                                     key={index}
                                     className="text-indigo-700"
+                                    onClick={() =>
+                                      setListUserAdd((prev) => [
+                                        ...prev,
+                                        {
+                                          id: item.id,
+                                          name: item.fullName,
+                                          email: item.email,
+                                        },
+                                      ])
+                                    }
                                   >
                                     {item.fullName} - {item.email}
                                   </Menu.Item>
@@ -236,6 +292,47 @@ export default function Root() {
                             </Menu.Dropdown>
                           </Menu>
                         </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full mt-2">
+                          {listUserAdd &&
+                            listUserAdd.length > 0 &&
+                            listUserAdd.map((item, index) => (
+                              <div
+                                className="flex items-center justify-between border border-indigo-700 bg-white p-2 rounded"
+                                key={index}
+                              >
+                                <div>
+                                  <UserCircleIcon className="h-8 w-8 text-indigo-700 mr-2" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-indigo-700 font-semibold text-sm">
+                                    {item.name}
+                                  </span>
+                                  <span className="text-indigo-700 text-xs">
+                                    {item.email}
+                                  </span>
+                                </div>
+                                <div
+                                  className="cursor-pointer"
+                                  onClick={() =>
+                                    handleDeleteListUserAdd(item.email)
+                                  }
+                                >
+                                  <XMarkIcon className="h-5 w-5 text-indigo-700 mr-2" />
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                        <div className="absolute bottom-0 flex justify-center w-full p-2">
+                          <button
+                            className={`${
+                              isLoading ? "cursor-not-allowed" : ""
+                            } bg-white text-indigo-700 py-2 mr-4 rounded border border-indigo-700 w-full font-bold transition duration-200 hover:bg-indigo-700 hover:text-white hover:border hover:border-white`}
+                            disabled={isLoading}
+                            onClick={() => addCollab()}
+                          >
+                            {isLoading ? "Đang lưu ..." : "Lưu"}
+                          </button>
+                        </div>
                       </>
                     )}
                   </div>
@@ -243,14 +340,6 @@ export default function Root() {
               ) : (
                 <></>
               )}
-            </div>
-          )}
-
-          {activeTab === "password" && (
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                Đổi mật khẩu
-              </h2>
             </div>
           )}
         </div>

@@ -13,12 +13,12 @@ import "regenerator-runtime/runtime";
 
 export default function Root() {
   const [id, setId] = useState();
+  const [mode, setMode] = useState();
   const [build, setBuild] = useState(sharedStateTableList.tableListMode || {});
   const [data, setData] = useState([]);
   const [dataColumn, setDataColumn] = useState(
     sharedStateTableListBuild.dataColumn || []
   );
-  console.log(dataColumn);
   const [col, setCol] = useState({ accessorKey: "", header: "" });
   const [isCheckAK, setIsCheckAK] = useState(true);
   const [isOpenEdit, setIsOpenEdit] = useState(true);
@@ -115,6 +115,21 @@ export default function Root() {
 
   useEffect(() => {
     const handleSharedStateUpdate = (event) => {
+      setMode(event.detail?.mode || {});
+    };
+
+    window.addEventListener("sharedStateMode:updated", handleSharedStateUpdate);
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateMode:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
       setDataColumn(event.detail?.dataColumn || []);
     };
 
@@ -151,15 +166,19 @@ export default function Root() {
       <div
         className={`${build.tableListMode === "on" ? "" : "hidden"} ${
           isOpenEdit ? "grid grid-cols-1 lg:grid-cols-3" : "flex justify-end"
-        } gap-2 w-[100%] lg:h-[calc(100vh-75px)]`}
+        } gap-2 w-[100%] lg:h-[calc(100vh-75px)] duration-200`}
       >
-        <div className="col-span-1 lg:col-span-2 w-full">
+        <div
+          className={`${
+            mode === "user" ? "col-span-3" : "col-span-1 lg:col-span-2"
+          } w-full`}
+        >
           <MantineReactTable table={table} />
         </div>
         <div
           className={`relative p-2 bg-indigo-50 rounded-lg shadow col-span-1 w-full transition-all duration-300 overflow-hidden ${
             isOpenEdit ? "w-full" : "w-[45px] flex items-center justify-center"
-          }`}
+          } ${mode === "user" ? "hidden" : ""}`}
         >
           {isOpenEdit ? (
             <>
