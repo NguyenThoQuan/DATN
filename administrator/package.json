@@ -43,8 +43,14 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.1.7",
+    "postcss": "^8.5.3",
+    "postcss-loader": "^8.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "single-spa-react": "^6.0.2"
+    "react-hot-toast": "^2.5.2",
+    "regenerator-runtime": "^0.14.1",
+    "single-spa-react": "^6.0.2",
+    "tailwindcss": "^4.1.7"
   }
 }

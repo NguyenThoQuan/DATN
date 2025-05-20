@@ -101,7 +101,7 @@ export default function Root() {
   return (
     <>
       <Toaster />
-      <div className="flex bg-gray-100 p-8">
+      <div className="flex bg-gray-100 p-8 h-[calc(100vh-290px)]">
         <div className="w-80 bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center border-b border-gray-200 pb-4 mb-4">
             <img
@@ -110,7 +110,7 @@ export default function Root() {
               className="w-10 h-10 rounded-full mr-3"
             />
             <span className="text-lg font-semibold text-gray-800">
-              Nguyễn Thọ Quân
+              {JSON.parse(localStorage.getItem("userLogin"))?.fullName}
             </span>
           </div>
           <ul className="space-y-2">
@@ -139,7 +139,7 @@ export default function Root() {
         {/* Content */}
         <div className="flex-1 ml-8">
           {activeTab === "info" && (
-            <div className="bg-white py-6 px-10 rounded-lg shadow-md">
+            <div className="bg-white py-6 px-10 rounded-lg shadow-md h-full">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Thông tin người dùng
               </h2>
@@ -244,7 +244,7 @@ export default function Root() {
           )}
 
           {activeTab === "password" && (
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white p-6 rounded-lg shadow-md h-full">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Đổi mật khẩu
               </h2>

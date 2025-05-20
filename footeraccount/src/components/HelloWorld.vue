@@ -1,8 +1,8 @@
 <template>
-  <div class="bg-gray-100 flex items-center justify-center pb-20 w-full">
+  <div class="bg-gray-100 flex items-center justify-center w-full pb-10">
     <div class="bg-white rounded-lg shadow-lg p-6 max-w-full w-full flex flex-col md:flex-row mx-8 ">
       <!-- Left Section: Contact Information -->
-      <div class="md:w-1/2 py-4 px-40">
+      <div class="md:w-1/2 w-full py-4 px-40">
         <div class="flex items-center mb-4 font-semibold">
           <svg
             xmlns="http://www.w3.org/2000/svg"
