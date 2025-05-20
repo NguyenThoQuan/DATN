@@ -24,7 +24,8 @@ export default function Root() {
   const [isClose, setIsClose] = useState(true);
 
   const getModule = async () => {
-    let url = "http://localhost:3000/api/build?_sort=mode";
+    const idUser = JSON.parse(localStorage.getItem("userLogin"))?.id;
+    let url = `http://localhost:3000/api/build?_sort=mode&createById=${idUser}`;
 
     if (search.length > 0) {
       url += `&name_like=${search}`;
@@ -130,10 +131,20 @@ export default function Root() {
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
+      const token = localStorage.getItem("token");
+      const idUser = JSON.parse(localStorage.getItem("userLogin"))?.id;
+
+      if (!token) {
+        toast.error("Vui lòng đăng nhập để thực hiện hành động này!");
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch("http://localhost:3000/api/build", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-User-Id": `${idUser}`,
         },
         body: JSON.stringify({ name: nameModule, mode: "edit" }),
       });
@@ -141,12 +152,13 @@ export default function Root() {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error("Có lỗi xảy ra ở máy chủ !");
+        toast.error(data.error || "Có lỗi xảy ra ở máy chủ!");
       } else {
         window.location.href = `/build?id=${encodeURIComponent(data?.id)}`;
       }
     } catch (error) {
       console.error("Lỗi:", error);
+      toast.error("Có lỗi xảy ra khi gửi yêu cầu!");
     } finally {
       setIsLoading(false);
     }
@@ -423,6 +435,22 @@ export default function Root() {
             </h1>
           </div>
         )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-center py-2">
+          <h1 className="text-2xl font-bold mb-4 text-indigo-700 mt-4">
+            Các hệ thống quản lý tham gia
+          </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 items-center rounded-[10px] bg-indigo-100 p-2 hover:bg-indigo-200 transition-colors">
+            <input
+              type="text"
+              placeholder="Nhập tên hệ thống quản lý"
+              className="col-span-1 lg:col-span-5 p-2 text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <button className="flex items-center justify-center p-2 rounded-md transition-colors bg-indigo-700 text-white hover:bg-indigo-800 col-span-1 lg:col-span-2">
+              <MagnifyingGlassIcon className="w-6 h-6 mr-1" />
+              <span className="font-medium">Tìm kiếm</span>
+            </button>
+          </div>
+        </div>
       </div>
     </>
   );
