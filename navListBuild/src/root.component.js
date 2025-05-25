@@ -65,6 +65,9 @@ export default function Root() {
     if (module === "Tạo bảng") {
       sharedStateTableList.setData({ tableListMode: "on" });
     }
+    if (module === "Thêm mới") {
+      sharedStateTableList.setData({ createTable: "on" });
+    }
   };
 
   const getModule = async (id) => {
@@ -85,7 +88,10 @@ export default function Root() {
       } else {
         setDataBuild(data[0]);
         sharedStateMode.setData({ mode: data[0]?.mode });
-        sharedStateTableList.setData({ tableListMode: data[0]?.tableList });
+        sharedStateTableList.setData({
+          tableListMode: data[0]?.tableList,
+          createTable: data[0]?.createTable,
+        });
         sharedStateTableListBuild.setData({ dataColumn: data[0]?.dataColumn });
       }
     } catch (error) {
@@ -105,6 +111,7 @@ export default function Root() {
         body: JSON.stringify({
           mode: dataBuild?.mode,
           tableList: sharedStateTableList.data?.tableListMode,
+          createTable: sharedStateTableList.data?.createTable,
           dataColumn: dataTableListBuild?.dataColumn || [],
         }),
       });

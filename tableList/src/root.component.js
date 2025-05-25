@@ -7,17 +7,22 @@ import {
   IconChevronLeft,
   IconTrash,
   IconSearch,
+  IconPlus,
 } from "@tabler/icons-react";
-import { Divider, Flex, TextInput, Button } from "@mantine/core";
+import { Divider, Flex, TextInput, Button, Text, Box } from "@mantine/core";
 import toast, { Toaster } from "react-hot-toast";
 import "regenerator-runtime/runtime";
 import { useDebouncedState } from "@mantine/hooks";
+import { modals } from "@mantine/modals";
+import { ModalsProvider } from "@mantine/modals";
+import ModalCreate from "./modalCreate.component";
 
 export default function Root() {
   const headerRef = React.useRef(null);
   const [id, setId] = useState();
   const [mode, setMode] = useState();
-  const [build, setBuild] = useState(sharedStateTableList.tableListMode || {});
+  const [build, setBuild] = useState(sharedStateTableList || {});
+  console.log(build);
   const [height, setHeight] = useState(0);
   const [data, setData] = useState([]);
   const [dataColumn, setDataColumn] = useState(
@@ -27,7 +32,7 @@ export default function Root() {
   const [isCheckAK, setIsCheckAK] = useState(true);
   const [isOpenEdit, setIsOpenEdit] = useState(true);
 
-  const [keySearch, setKeySearch] = useDebouncedState(
+  const [search, setSearch] = useDebouncedState(
     {
       keySearch: "",
     },
@@ -52,8 +57,16 @@ export default function Root() {
     setIsCheckAK(!isDuplicate);
   };
 
+  const handleChangeSearch = (field) => (event) => {
+    const value = event.currentTarget?.value ?? "";
+    setSearch((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   const handleInputChange = (field) => (event) => {
-    const value = event.target?.value ?? "";
+    const value = event.currentTarget?.value ?? "";
     setCol((prev) => ({
       ...prev,
       [field]: value,
@@ -99,6 +112,18 @@ export default function Root() {
           : item
       )
     );
+  };
+
+  const modalCreate = (props) => {
+    modals.openConfirmModal({
+      title: <Text className="font-bold">Thêm mới</Text>,
+      size: "auto",
+      centered: true,
+      zIndex: 1000,
+      children: <ModalCreate props={props} />,
+      confirmProps: { display: "none" },
+      cancelProps: { display: "none" },
+    });
   };
 
   useEffect(() => {
@@ -188,8 +213,21 @@ export default function Root() {
     renderTopToolbarCustomActions: () => (
       <Flex justify={"space-between"} w={"100%"}>
         <Flex gap="md">
-          <TextInput placeholder="Nhập từ khóa" />
+          <TextInput
+            placeholder="Nhập từ khóa"
+            defaultValue={search.keySearch}
+            onChange={() => handleChangeSearch("keySearch")}
+          />
           <Button leftIcon={<IconSearch size={"15px"} />}>Tìm kiếm</Button>
+        </Flex>
+        <Flex gap={"md"} justify={"flex-end"} align={"center"}>
+          <Button
+            leftIcon={<IconPlus size={"15px"} />}
+            className={`${build.createTable === "on" ? "" : "hidden"}`}
+            onClick={() => modalCreate(dataColumn)}
+          >
+            Thêm mới
+          </Button>
         </Flex>
       </Flex>
     ),
@@ -200,7 +238,7 @@ export default function Root() {
   });
 
   return (
-    <>
+    <ModalsProvider>
       <Toaster />
       <div
         className={`${build.tableListMode === "on" ? "" : "hidden"} ${
@@ -352,6 +390,6 @@ export default function Root() {
           </div>
         </div>
       </div>
-    </>
+    </ModalsProvider>
   );
 }
