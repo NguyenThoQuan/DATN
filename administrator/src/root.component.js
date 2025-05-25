@@ -8,7 +8,7 @@ import {
   UserCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
-import { Divider, Menu, Text } from "@mantine/core";
+import { Divider, Menu, Text, Checkbox } from "@mantine/core";
 import { useDebouncedState } from "@mantine/hooks";
 
 export default function Root() {
@@ -152,6 +152,7 @@ export default function Root() {
                 }}
               >
                 {tab === "moduleManager" && "Quản trị hệ thống"}
+                {tab === "decentralization" && "Phân quyền"}
               </li>
             ))}
           </ul>
@@ -229,11 +230,11 @@ export default function Root() {
                       <div
                         key={index}
                         className="bg-white text-indigo-700 border border-indigo-700 hover:bg-indigo-700 hover:text-white hover:border-white cursor-pointer text-center shadow-md p-1 rounded-md duration-200"
+                        onClick={() => setActiveFunc(item)}
                       >
                         <span className="font-bold truncate text-sm">
                           {item === "addManager" && "Thêm nhân viên"}
-                          {item === "decentralization" &&
-                            "Phân quyền chức năng"}
+                          {item === "decentralization" && "Phân quyền"}
                         </span>
                       </div>
                     ))}
@@ -321,6 +322,93 @@ export default function Root() {
                                 </div>
                               </div>
                             ))}
+                        </div>
+                        <div className="absolute bottom-0 flex justify-center w-full p-2">
+                          <button
+                            className={`${
+                              isLoading ? "cursor-not-allowed" : ""
+                            } bg-white text-indigo-700 py-2 mr-4 rounded border border-indigo-700 w-full font-bold transition duration-200 hover:bg-indigo-700 hover:text-white hover:border hover:border-white`}
+                            disabled={isLoading}
+                            onClick={() => addCollab()}
+                          >
+                            {isLoading ? "Đang lưu ..." : "Lưu"}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    {activeFunc === "decentralization" && (
+                      <>
+                        <div className="flex items-center rounded-[10px] bg-indigo-100 p-2 hover:bg-indigo-200 transition-colors">
+                          <Menu trigger="hover" closeDelay={400} width={500}>
+                            <Menu.Target>
+                              <input
+                                type="text"
+                                defaultValue={searchUser}
+                                onChange={(e) =>
+                                  setSearchUser(e.currentTarget.value)
+                                }
+                                placeholder="Nhập email người dùng"
+                                className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              />
+                            </Menu.Target>
+                            <Menu.Dropdown className="w-full">
+                              {searchUser.length < 3 ? (
+                                <Menu.Item className="text-center">
+                                  <Text className="text-indigo-700">
+                                    Vui lòng nhập tối thiểu 3 kí tự
+                                  </Text>
+                                </Menu.Item>
+                              ) : searchUser.length >= 3 &&
+                                dataUser.length > 0 ? (
+                                dataUser.map((item, index) => (
+                                  <Menu.Item
+                                    key={index}
+                                    className="text-indigo-700"
+                                    onClick={() =>
+                                      setListUserAdd((prev) => [
+                                        ...prev,
+                                        {
+                                          id: item.id,
+                                          name: item.fullName,
+                                          email: item.email,
+                                        },
+                                      ])
+                                    }
+                                  >
+                                    {item.fullName} - {item.email}
+                                  </Menu.Item>
+                                ))
+                              ) : searchUser.length >= 3 &&
+                                dataUser.length === 0 ? (
+                                <Menu.Item className="text-indigo-700 text-center">
+                                  Không tìm thấy người dùng này !
+                                </Menu.Item>
+                              ) : (
+                                <></>
+                              )}
+                            </Menu.Dropdown>
+                          </Menu>
+                        </div>
+                        <div className="flex justify-between gap-8 mt-2">
+                          <div className="flex flex-col gap-4 w-1/2">
+                            <span className="text-lg font-semibold text-white text-center bg-indigo-700 p-2 rounded-md">
+                              Phân quyền chức năng
+                            </span>
+                            <div className="flex flex-col gap-4 p-4 rounded-lg">
+                              <Checkbox label="Thêm mới" checked={true} />
+                              <Checkbox label="Chỉnh sửa" />
+                              <Checkbox label="Xoá" />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-4 w-1/2">
+                            <span className="text-lg font-semibold text-white text-center bg-indigo-700 p-2 rounded-md">
+                              Phân quyền module
+                            </span>
+                            <div className="flex flex-col gap-4 p-4 rounded-lg">
+                              <Checkbox label="Bảng danh sách" />
+                              <Checkbox label="Biểu đồ" />
+                            </div>
+                          </div>
                         </div>
                         <div className="absolute bottom-0 flex justify-center w-full p-2">
                           <button

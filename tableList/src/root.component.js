@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { sharedStateTableList, sharedStateTableListBuild } from "shared-state";
 import "./index.css";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
@@ -6,15 +6,19 @@ import {
   IconChevronRight,
   IconChevronLeft,
   IconTrash,
+  IconSearch,
 } from "@tabler/icons-react";
-import { Divider } from "@mantine/core";
+import { Divider, Flex, TextInput, Button } from "@mantine/core";
 import toast, { Toaster } from "react-hot-toast";
 import "regenerator-runtime/runtime";
+import { useDebouncedState } from "@mantine/hooks";
 
 export default function Root() {
+  const headerRef = React.useRef(null);
   const [id, setId] = useState();
   const [mode, setMode] = useState();
   const [build, setBuild] = useState(sharedStateTableList.tableListMode || {});
+  const [height, setHeight] = useState(0);
   const [data, setData] = useState([]);
   const [dataColumn, setDataColumn] = useState(
     sharedStateTableListBuild.dataColumn || []
@@ -22,6 +26,13 @@ export default function Root() {
   const [col, setCol] = useState({ accessorKey: "", header: "" });
   const [isCheckAK, setIsCheckAK] = useState(true);
   const [isOpenEdit, setIsOpenEdit] = useState(true);
+
+  const [keySearch, setKeySearch] = useDebouncedState(
+    {
+      keySearch: "",
+    },
+    300
+  );
 
   const columns = useMemo(() => {
     if (!dataColumn || !Array.isArray(dataColumn)) return [];
@@ -90,10 +101,21 @@ export default function Root() {
     );
   };
 
-  const table = useMantineReactTable({
-    columns,
-    data: data || [],
-  });
+  useEffect(() => {
+    const headerHeight = headerRef.current?.offsetHeight || 0;
+    const handleResize = () => {
+      // 190 là chiều cao của phần phân trang
+      // headerHeight là chiều cao của phần header
+      setHeight(window.innerHeight - (187.5 + headerHeight));
+    };
+
+    handleResize(); // Set initial height
+    window.addEventListener("resize", handleResize); // Update height on window resize
+
+    return () => {
+      window.removeEventListener("resize", handleResize); // Clean up event listener
+    };
+  }, [height]);
 
   useEffect(() => {
     const handleSharedStateUpdate = (event) => {
@@ -159,6 +181,23 @@ export default function Root() {
       setId(decodeURIComponent(idFromUrl));
     }
   }, []);
+
+  const table = useMantineReactTable({
+    columns,
+    data: data || [],
+    renderTopToolbarCustomActions: () => (
+      <Flex justify={"space-between"} w={"100%"}>
+        <Flex gap="md">
+          <TextInput placeholder="Nhập từ khóa" />
+          <Button leftIcon={<IconSearch size={"15px"} />}>Tìm kiếm</Button>
+        </Flex>
+      </Flex>
+    ),
+    renderToolbarInternalActions: () => <></>,
+    mantineTableContainerProps: {
+      style: { maxHeight: height, minHeight: height },
+    },
+  });
 
   return (
     <>

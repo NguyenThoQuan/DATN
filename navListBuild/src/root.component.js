@@ -1,7 +1,7 @@
 import "./index.css";
 import { useEffect, useState } from "react";
 import "regenerator-runtime/runtime";
-import { FaEye, FaCheck, FaEllipsisH } from "react-icons/fa";
+import { FaEye, FaCheck, FaEllipsisH, FaChartArea } from "react-icons/fa";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa6";
 import {
   TbLayoutSidebarLeftCollapse,
@@ -38,6 +38,13 @@ export default function Root() {
       subMenu: ["Tạo bảng", "Thêm mới", "Chỉnh sửa", "Xóa", "Xuất Excel"],
       value: "tableList",
       key: "tableList",
+    },
+    {
+      title: "Biểu đồ phân tích",
+      icon: <FaChartArea />,
+      subMenu: ["Biểu đồ cột", "Biểu đồ miền", "Biểu đồ tròn", "Biểu đồ đường"],
+      value: "chart",
+      key: "chart",
     },
     {
       title: "Chế độ",
