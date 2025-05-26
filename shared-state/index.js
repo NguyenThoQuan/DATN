@@ -9,7 +9,7 @@ export const sharedStateMode = {
 };
 
 export const sharedStateTableList = {
-  data: { tableListMode: "off", createTable: "off" },
+  data: { tableListMode: "off", createTable: "off", dataTable: [] },
   setData(newData) {
     this.data = { ...this.data, ...newData };
     window.dispatchEvent(

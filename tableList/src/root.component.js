@@ -22,7 +22,6 @@ export default function Root() {
   const [id, setId] = useState();
   const [mode, setMode] = useState();
   const [build, setBuild] = useState(sharedStateTableList || {});
-  console.log(build);
   const [height, setHeight] = useState(0);
   const [data, setData] = useState([]);
   const [dataColumn, setDataColumn] = useState(
@@ -120,7 +119,7 @@ export default function Root() {
       size: "auto",
       centered: true,
       zIndex: 1000,
-      children: <ModalCreate props={props} />,
+      children: <ModalCreate props={props} id={id} setData={setData} />,
       confirmProps: { display: "none" },
       cancelProps: { display: "none" },
     });
@@ -145,6 +144,7 @@ export default function Root() {
   useEffect(() => {
     const handleSharedStateUpdate = (event) => {
       setBuild(event.detail || {});
+      setData(event.detail?.dataTable || []);
     };
 
     window.addEventListener(

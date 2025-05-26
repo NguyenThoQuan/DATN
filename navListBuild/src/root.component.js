@@ -19,7 +19,6 @@ import toast, { Toaster } from "react-hot-toast";
 export default function Root() {
   const [id, setId] = useState();
   const [dataBuild, setDataBuild] = useState();
-  console.log(dataBuild);
   const [dataTableListBuild, setDataTableListBuild] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -91,6 +90,7 @@ export default function Root() {
         sharedStateTableList.setData({
           tableListMode: data[0]?.tableList,
           createTable: data[0]?.createTable,
+          dataTable: data[0]?.dataTable,
         });
         sharedStateTableListBuild.setData({ dataColumn: data[0]?.dataColumn });
       }
@@ -112,6 +112,7 @@ export default function Root() {
           mode: dataBuild?.mode,
           tableList: sharedStateTableList.data?.tableListMode,
           createTable: sharedStateTableList.data?.createTable,
+          dataTable: sharedStateTableList.data?.dataTable,
           dataColumn: dataTableListBuild?.dataColumn || [],
         }),
       });
