@@ -28,6 +28,26 @@ export const sharedStateCreate = {
   },
 };
 
+export const sharedStateEdit = {
+  data: { editTable: "off" },
+  setData(newData) {
+    this.data = { ...this.data, ...newData };
+    window.dispatchEvent(
+      new CustomEvent("sharedStateEdit:updated", { detail: this.data })
+    );
+  },
+};
+
+export const sharedStateDelete = {
+  data: { deleteTable: "off" },
+  setData(newData) {
+    this.data = { ...this.data, ...newData };
+    window.dispatchEvent(
+      new CustomEvent("sharedStateDelete:updated", { detail: this.data })
+    );
+  },
+};
+
 export const sharedStateTableListBuild = {
   data: { dataColumn: "" },
   setData(newData) {

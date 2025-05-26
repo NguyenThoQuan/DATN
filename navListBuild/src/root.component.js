@@ -14,6 +14,8 @@ import {
   sharedStateTableListBuild,
   sharedStateMode,
   sharedStateCreate,
+  sharedStateEdit,
+  sharedStateDelete,
 } from "shared-state";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -22,6 +24,8 @@ export default function Root() {
   const [dataBuild, setDataBuild] = useState();
   const [dataTableListBuild, setDataTableListBuild] = useState();
   const [modeCreate, setModeCreate] = useState();
+  const [modeEdit, setModeEdit] = useState();
+  const [modeDelete, setModeDelete] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChangeValue = (value, key) => {
@@ -50,7 +54,7 @@ export default function Root() {
     {
       title: "Chế độ",
       icon: <FaEye />,
-      subMenu: ["Chỉnh sửa", "Người dùng"],
+      subMenu: ["Tùy chỉnh", "Người dùng"],
       key: "regime",
     },
   ];
@@ -68,6 +72,12 @@ export default function Root() {
     }
     if (module === "Thêm mới") {
       sharedStateCreate.setData({ createTable: "on" });
+    }
+    if (module === "Chỉnh sửa") {
+      sharedStateEdit.setData({ editTable: "on" });
+    }
+    if (module === "Xóa") {
+      sharedStateDelete.setData({ deleteTable: "on" });
     }
   };
 
@@ -94,6 +104,8 @@ export default function Root() {
           dataTable: data[0]?.dataTable,
         });
         sharedStateCreate.setData({ createTable: data[0]?.createTable });
+        sharedStateEdit.setData({ editTable: data[0]?.editTable });
+        sharedStateDelete.setData({ deleteTable: data[0]?.deleteTable });
         sharedStateTableListBuild.setData({ dataColumn: data[0]?.dataColumn });
       }
     } catch (error) {
@@ -114,6 +126,8 @@ export default function Root() {
           mode: dataBuild?.mode,
           tableList: sharedStateTableList.data?.tableListMode,
           createTable: modeCreate?.createTable,
+          editTable: modeEdit?.editTable,
+          deleteTable: modeDelete?.deleteTable,
           dataTable: sharedStateTableList.data?.dataTable,
           dataColumn: dataTableListBuild?.dataColumn || [],
         }),
@@ -189,6 +203,39 @@ export default function Root() {
     return () => {
       window.removeEventListener(
         "sharedStateCreate:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setModeEdit(event.detail || {});
+    };
+
+    window.addEventListener("sharedStateEdit:updated", handleSharedStateUpdate);
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateEdit:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setModeDelete(event.detail || {});
+    };
+
+    window.addEventListener(
+      "sharedStateDelete:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateDelete:updated",
         handleSharedStateUpdate
       );
     };
@@ -306,7 +353,7 @@ export default function Root() {
                           open ? "" : "hidden"
                         }`}
                         onClick={() => {
-                          if (subMenu === "Chỉnh sửa") {
+                          if (subMenu === "Tùy chỉnh") {
                             handleChangeValue("edit", "mode");
                             sharedStateMode.setData({ mode: "edit" });
                           } else if (subMenu === "Người dùng") {
@@ -314,6 +361,7 @@ export default function Root() {
                             sharedStateMode.setData({ mode: "user" });
                           } else {
                             selectModule(subMenu);
+                            console.log(subMenu);
                           }
                         }}
                       >

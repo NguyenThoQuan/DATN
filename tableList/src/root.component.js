@@ -3,6 +3,8 @@ import {
   sharedStateTableList,
   sharedStateTableListBuild,
   sharedStateCreate,
+  sharedStateEdit,
+  sharedStateDelete,
 } from "shared-state";
 import "./index.css";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
@@ -12,6 +14,7 @@ import {
   IconTrash,
   IconSearch,
   IconPlus,
+  IconEdit,
 } from "@tabler/icons-react";
 import {
   Divider,
@@ -22,6 +25,8 @@ import {
   ScrollArea,
   Grid,
   Checkbox,
+  Tooltip,
+  ActionIcon,
 } from "@mantine/core";
 import toast, { Toaster } from "react-hot-toast";
 import "regenerator-runtime/runtime";
@@ -35,7 +40,8 @@ export default function Root() {
   const [id, setId] = useState();
   const [mode, setMode] = useState();
   const [modeCreate, setModeCreate] = useState();
-  console.log(modeCreate);
+  const [modeEdit, setModeEdit] = useState();
+  const [modeDelete, setModeDelete] = useState();
   const [build, setBuild] = useState(sharedStateTableList || {});
   const [height, setHeight] = useState(0);
   const [data, setData] = useState([]);
@@ -59,8 +65,30 @@ export default function Root() {
     return dataColumn.map((col) => ({
       accessorKey: col.accessorKey || "defaultKey",
       header: col.header || "Default Header",
+      ...(col.accessorKey === "action" && {
+        Cell: ({ row }) => (
+          <Flex justify={"start"} align={"center"} gap={"xs"}>
+            <Tooltip
+              label="Chỉnh sửa"
+              className={`${modeEdit?.editTable === "on" ? "" : "hidden"}`}
+            >
+              <ActionIcon variant="light" aria-label="Settings" color="yellow">
+                <IconEdit size={"20px"} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip
+              label="Xóa"
+              className={`${modeDelete?.deleteTable === "on" ? "" : "hidden"}`}
+            >
+              <ActionIcon variant="light" aria-label="Settings" color="red">
+                <IconTrash size={"20px"} />
+              </ActionIcon>
+            </Tooltip>
+          </Flex>
+        ),
+      }),
     }));
-  }, [dataColumn]);
+  }, [dataColumn, modeEdit, modeDelete]);
 
   const checkDuplicateAccessorKey = (key) => {
     if (!key) {
@@ -195,6 +223,39 @@ export default function Root() {
 
   useEffect(() => {
     const handleSharedStateUpdate = (event) => {
+      setModeEdit(event.detail || {});
+    };
+
+    window.addEventListener("sharedStateEdit:updated", handleSharedStateUpdate);
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateEdit:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setModeDelete(event.detail || {});
+    };
+
+    window.addEventListener(
+      "sharedStateDelete:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateDelete:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
       setMode(event.detail?.mode || {});
     };
 
@@ -239,6 +300,22 @@ export default function Root() {
       setId(decodeURIComponent(idFromUrl));
     }
   }, []);
+
+  useEffect(() => {
+    if (modeEdit?.editTable === "on" || modeDelete?.deleteTable === "on") {
+      setDataColumn((prev) => {
+        const hasActionColumn = prev.some(
+          (col) => col.accessorKey === "action"
+        );
+        if (hasActionColumn) {
+          return prev;
+        }
+        return [...prev, { accessorKey: "action", header: "Thao tác" }];
+      });
+    } else {
+      handleDeleteColumn("action");
+    }
+  }, [modeEdit, modeDelete]);
 
   const table = useMantineReactTable({
     columns,
@@ -340,58 +417,62 @@ export default function Root() {
                   </div>
                   <Divider
                     my="xs"
-                    label="Chỉnh sửa trường dữ liệu"
+                    label="Thao tác trường dữ liệu"
                     labelPosition="center"
                     className="text-indigo-700 font-bold"
                   />
                   {dataColumn && dataColumn.length > 0 ? (
-                    dataColumn.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-col gap-1 sm:flex-row sm:gap-4 items-start sm:items-center justify-between mt-1"
-                      >
-                        <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
-                          <span className="text-indigo-700 font-semibold text-sm">
-                            Khóa truy cập
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Khóa truy cập"
-                            value={item.accessorKey}
-                            onChange={(e) =>
-                              handleUpdateColumn(item.accessorKey, {
-                                accessorKey: e.currentTarget.value,
-                                header: item.header,
-                              })
-                            }
-                            className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1 w-full sm:flex-[6] sm:w-auto">
-                          <span className="text-indigo-700 font-semibold text-sm">
-                            Trường dữ liệu
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Tên trường dữ liệu"
-                            value={item.header}
-                            onChange={(e) =>
-                              handleUpdateColumn(item.accessorKey, {
-                                accessorKey: item.accessorKey,
-                                header: e.currentTarget.value,
-                              })
-                            }
-                            className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          />
-                        </label>
+                    dataColumn
+                      .filter((item) => item.accessorKey !== "action")
+                      .map((item, index) => (
                         <div
-                          className="flex flex-col gap-1 w-full sm:flex-[1] sm:w-auto"
-                          onClick={() => handleDeleteColumn(item.accessorKey)}
+                          key={index}
+                          className="flex flex-col gap-1 sm:flex-row sm:gap-4 items-start sm:items-center justify-between mt-1"
                         >
-                          <IconTrash className="text-indigo-700 p-[2px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
+                          <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
+                            <span className="text-indigo-700 font-semibold text-sm">
+                              Khóa truy cập
+                            </span>
+                            <input
+                              type="text"
+                              placeholder="Khóa truy cập"
+                              value={item.accessorKey}
+                              onChange={(e) =>
+                                handleUpdateColumn(item.accessorKey, {
+                                  accessorKey: e.currentTarget.value,
+                                  header: item.header,
+                                })
+                              }
+                              className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1 w-full sm:flex-[6] sm:w-auto">
+                            <span className="text-indigo-700 font-semibold text-sm">
+                              Trường dữ liệu
+                            </span>
+                            <input
+                              type="text"
+                              placeholder="Tên trường dữ liệu"
+                              value={item.header}
+                              onChange={(e) =>
+                                handleUpdateColumn(item.accessorKey, {
+                                  accessorKey: item.accessorKey,
+                                  header: e.currentTarget.value,
+                                })
+                              }
+                              className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                          </label>
+                          <div
+                            className="flex flex-col gap-1 w-full sm:flex-[1] sm:w-auto"
+                            onClick={() => handleDeleteColumn(item.accessorKey)}
+                          >
+                            <Tooltip label="Xóa">
+                              <IconTrash className="text-indigo-700 p-[2px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
+                            </Tooltip>
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      ))
                   ) : (
                     <div className="text-center w-full">
                       <span className="text-1xl font-bold mb-4 mt-4 text-gray-500 italic text-center">
@@ -400,6 +481,35 @@ export default function Root() {
                     </div>
                   )}
                 </div>
+                <Divider
+                  my="xs"
+                  label="Thêm bộ lọc"
+                  labelPosition="center"
+                  className="text-indigo-700 font-bold"
+                />
+                <Grid>
+                  {dataColumn && dataColumn.length > 0 ? (
+                    dataColumn
+                      .filter((item) => item.accessorKey !== "action")
+                      .map((item, index) => (
+                        <Grid.Col span={6}>
+                          <Checkbox
+                            label={item.header}
+                            classNames={{
+                              label: "text-indigo-700",
+                              input: "text-indigo-700 checked:bg-indigo-700",
+                            }}
+                          />
+                        </Grid.Col>
+                      ))
+                  ) : (
+                    <div className="text-center w-full">
+                      <span className="text-1xl font-bold mb-4 mt-4 text-gray-500 italic text-center">
+                        Bạn chưa thêm trường dữ liệu nào !
+                      </span>
+                    </div>
+                  )}
+                </Grid>
                 <Divider
                   my="xs"
                   label="Thao tác bảng"
@@ -422,6 +532,44 @@ export default function Root() {
                         } else {
                           setModeCreate("on");
                           sharedStateCreate.setData({ createTable: "on" });
+                        }
+                      }}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={6}>
+                    <Checkbox
+                      label="Chỉnh sửa"
+                      checked={modeEdit?.editTable === "on" ? true : false}
+                      classNames={{
+                        label: "text-indigo-700",
+                        input: "text-indigo-700 checked:bg-indigo-700",
+                      }}
+                      onClick={() => {
+                        if (modeEdit?.editTable === "on") {
+                          setModeEdit("off");
+                          sharedStateEdit.setData({ editTable: "off" });
+                        } else {
+                          setModeEdit("on");
+                          sharedStateEdit.setData({ editTable: "on" });
+                        }
+                      }}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={6}>
+                    <Checkbox
+                      label="Xóa"
+                      checked={modeDelete?.deleteTable === "on" ? true : false}
+                      classNames={{
+                        label: "text-indigo-700",
+                        input: "text-indigo-700 checked:bg-indigo-700",
+                      }}
+                      onClick={() => {
+                        if (modeDelete?.deleteTable === "on") {
+                          setModeDelete("off");
+                          sharedStateDelete.setData({ deleteTable: "off" });
+                        } else {
+                          setModeDelete("on");
+                          sharedStateDelete.setData({ deleteTable: "on" });
                         }
                       }}
                     />

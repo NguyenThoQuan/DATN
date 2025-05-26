@@ -233,7 +233,7 @@ export default function Root() {
                         onClick={() => setActiveFunc(item)}
                       >
                         <span className="font-bold truncate text-sm">
-                          {item === "addManager" && "Thêm nhân viên"}
+                          {item === "addManager" && "Chia sẻ tùy chỉnh"}
                           {item === "decentralization" && "Phân quyền"}
                         </span>
                       </div>
