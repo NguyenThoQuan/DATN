@@ -9,7 +9,16 @@ import {
   IconSearch,
   IconPlus,
 } from "@tabler/icons-react";
-import { Divider, Flex, TextInput, Button, Text, Box } from "@mantine/core";
+import {
+  Divider,
+  Flex,
+  TextInput,
+  Button,
+  Text,
+  ScrollArea,
+  Grid,
+  Checkbox,
+} from "@mantine/core";
 import toast, { Toaster } from "react-hot-toast";
 import "regenerator-runtime/runtime";
 import { useDebouncedState } from "@mantine/hooks";
@@ -22,6 +31,7 @@ export default function Root() {
   const [id, setId] = useState();
   const [mode, setMode] = useState();
   const [build, setBuild] = useState(sharedStateTableList || {});
+  console.log(build);
   const [height, setHeight] = useState(0);
   const [data, setData] = useState([]);
   const [dataColumn, setDataColumn] = useState(
@@ -268,104 +278,131 @@ export default function Root() {
                   Tùy chỉnh
                 </h2>
               </div>
-              <Divider
-                my="xs"
-                label="Thêm trường dữ liệu"
-                labelPosition="center"
-                className="text-indigo-700 font-bold"
-              />
-              <div>
-                <div className="flex flex-col gap-2 mt-1">
-                  <input
-                    type="text"
-                    placeholder="Khóa truy cập"
-                    value={col.accessorKey}
-                    onChange={handleInputChange("accessorKey")}
-                    className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Tên trường dữ liệu"
-                    value={col.header}
-                    onChange={handleInputChange("header")}
-                    className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <button
-                    className={`text-white text-sm py-2 px-4 rounded-md transition-colors ${
-                      isCheckAK
-                        ? "bg-indigo-700 hover:bg-indigo-800"
-                        : "bg-gray-500 cursor-not-allowed"
-                    }`}
-                    onClick={handleAddColumn}
-                    disabled={!isCheckAK}
-                  >
-                    {isCheckAK
-                      ? "Thêm mới"
-                      : "Khóa truy cập không được trùng lặp !"}
-                  </button>
-                </div>
+              <ScrollArea h={1050}>
                 <Divider
                   my="xs"
-                  label="Chỉnh sửa trường dữ liệu"
+                  label="Thêm trường dữ liệu"
                   labelPosition="center"
                   className="text-indigo-700 font-bold"
                 />
-                {dataColumn && dataColumn.length > 0 ? (
-                  dataColumn.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col gap-1 sm:flex-row sm:gap-4 items-start sm:items-center justify-between mt-1"
+                <div>
+                  <div className="flex flex-col gap-2 mt-1">
+                    <input
+                      type="text"
+                      placeholder="Khóa truy cập"
+                      value={col.accessorKey}
+                      onChange={handleInputChange("accessorKey")}
+                      className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Tên trường dữ liệu"
+                      value={col.header}
+                      onChange={handleInputChange("header")}
+                      className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <button
+                      className={`text-white text-sm py-2 px-4 rounded-md transition-colors ${
+                        isCheckAK
+                          ? "bg-indigo-700 hover:bg-indigo-800"
+                          : "bg-gray-500 cursor-not-allowed"
+                      }`}
+                      onClick={handleAddColumn}
+                      disabled={!isCheckAK}
                     >
-                      <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
-                        <span className="text-indigo-700 font-semibold text-sm">
-                          Khóa truy cập
-                        </span>
-                        <input
-                          type="text"
-                          placeholder="Khóa truy cập"
-                          value={item.accessorKey}
-                          onChange={(e) =>
-                            handleUpdateColumn(item.accessorKey, {
-                              accessorKey: e.currentTarget.value,
-                              header: item.header,
-                            })
-                          }
-                          className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1 w-full sm:flex-[6] sm:w-auto">
-                        <span className="text-indigo-700 font-semibold text-sm">
-                          Trường dữ liệu
-                        </span>
-                        <input
-                          type="text"
-                          placeholder="Tên trường dữ liệu"
-                          value={item.header}
-                          onChange={(e) =>
-                            handleUpdateColumn(item.accessorKey, {
-                              accessorKey: item.accessorKey,
-                              header: e.currentTarget.value,
-                            })
-                          }
-                          className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                      </label>
-                      <div
-                        className="flex flex-col gap-1 w-full sm:flex-[1] sm:w-auto"
-                        onClick={() => handleDeleteColumn(item.accessorKey)}
-                      >
-                        <IconTrash className="text-indigo-700 p-[2px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center w-full">
-                    <span className="text-1xl font-bold mb-4 mt-4 text-gray-500 italic text-center">
-                      Bạn chưa thêm trường dữ liệu nào !
-                    </span>
+                      {isCheckAK
+                        ? "Thêm mới"
+                        : "Khóa truy cập không được trùng lặp !"}
+                    </button>
                   </div>
-                )}
-              </div>
+                  <Divider
+                    my="xs"
+                    label="Chỉnh sửa trường dữ liệu"
+                    labelPosition="center"
+                    className="text-indigo-700 font-bold"
+                  />
+                  {dataColumn && dataColumn.length > 0 ? (
+                    dataColumn.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col gap-1 sm:flex-row sm:gap-4 items-start sm:items-center justify-between mt-1"
+                      >
+                        <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
+                          <span className="text-indigo-700 font-semibold text-sm">
+                            Khóa truy cập
+                          </span>
+                          <input
+                            type="text"
+                            placeholder="Khóa truy cập"
+                            value={item.accessorKey}
+                            onChange={(e) =>
+                              handleUpdateColumn(item.accessorKey, {
+                                accessorKey: e.currentTarget.value,
+                                header: item.header,
+                              })
+                            }
+                            className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </label>
+                        <label className="flex flex-col gap-1 w-full sm:flex-[6] sm:w-auto">
+                          <span className="text-indigo-700 font-semibold text-sm">
+                            Trường dữ liệu
+                          </span>
+                          <input
+                            type="text"
+                            placeholder="Tên trường dữ liệu"
+                            value={item.header}
+                            onChange={(e) =>
+                              handleUpdateColumn(item.accessorKey, {
+                                accessorKey: item.accessorKey,
+                                header: e.currentTarget.value,
+                              })
+                            }
+                            className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </label>
+                        <div
+                          className="flex flex-col gap-1 w-full sm:flex-[1] sm:w-auto"
+                          onClick={() => handleDeleteColumn(item.accessorKey)}
+                        >
+                          <IconTrash className="text-indigo-700 p-[2px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center w-full">
+                      <span className="text-1xl font-bold mb-4 mt-4 text-gray-500 italic text-center">
+                        Bạn chưa thêm trường dữ liệu nào !
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <Divider
+                  my="xs"
+                  label="Thao tác bảng"
+                  labelPosition="center"
+                  className="text-indigo-700 font-bold"
+                />
+                <Grid grow>
+                  <Grid.Col span={6}>
+                    <Checkbox
+                      label="Thêm mới"
+                      checked={build.createTable === "on" ? true : false}
+                      classNames={{
+                        label: "text-indigo-700",
+                        input: "text-indigo-700 checked:bg-indigo-700",
+                      }}
+                      onClick={() => {
+                        if (build?.createTable === "on") {
+                          setBuild((prev) => ({ ...prev, createTable: "off" }));
+                        } else {
+                          setBuild((prev) => ({ ...prev, createTable: "on" }));
+                        }
+                      }}
+                    />
+                  </Grid.Col>
+                </Grid>
+              </ScrollArea>
             </>
           ) : (
             <IconChevronLeft
