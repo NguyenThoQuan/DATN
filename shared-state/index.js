@@ -9,11 +9,21 @@ export const sharedStateMode = {
 };
 
 export const sharedStateTableList = {
-  data: { tableListMode: "off", createTable: "off", dataTable: [] },
+  data: { tableListMode: "off", dataTable: [] },
   setData(newData) {
     this.data = { ...this.data, ...newData };
     window.dispatchEvent(
       new CustomEvent("sharedStateTableList:updated", { detail: this.data })
+    );
+  },
+};
+
+export const sharedStateCreate = {
+  data: { createTable: "off" },
+  setData(newData) {
+    this.data = { ...this.data, ...newData };
+    window.dispatchEvent(
+      new CustomEvent("sharedStateCreate:updated", { detail: this.data })
     );
   },
 };

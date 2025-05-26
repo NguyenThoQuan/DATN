@@ -13,6 +13,7 @@ import {
   sharedStateTableList,
   sharedStateTableListBuild,
   sharedStateMode,
+  sharedStateCreate,
 } from "shared-state";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -20,6 +21,7 @@ export default function Root() {
   const [id, setId] = useState();
   const [dataBuild, setDataBuild] = useState();
   const [dataTableListBuild, setDataTableListBuild] = useState();
+  const [modeCreate, setModeCreate] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChangeValue = (value, key) => {
@@ -65,7 +67,7 @@ export default function Root() {
       sharedStateTableList.setData({ tableListMode: "on" });
     }
     if (module === "Thêm mới") {
-      sharedStateTableList.setData({ createTable: "on" });
+      sharedStateCreate.setData({ createTable: "on" });
     }
   };
 
@@ -89,9 +91,9 @@ export default function Root() {
         sharedStateMode.setData({ mode: data[0]?.mode });
         sharedStateTableList.setData({
           tableListMode: data[0]?.tableList,
-          createTable: data[0]?.createTable,
           dataTable: data[0]?.dataTable,
         });
+        sharedStateCreate.setData({ createTable: data[0]?.createTable });
         sharedStateTableListBuild.setData({ dataColumn: data[0]?.dataColumn });
       }
     } catch (error) {
@@ -111,7 +113,7 @@ export default function Root() {
         body: JSON.stringify({
           mode: dataBuild?.mode,
           tableList: sharedStateTableList.data?.tableListMode,
-          createTable: sharedStateTableList.data?.createTable,
+          createTable: modeCreate?.createTable,
           dataTable: sharedStateTableList.data?.dataTable,
           dataColumn: dataTableListBuild?.dataColumn || [],
         }),
@@ -169,6 +171,24 @@ export default function Root() {
     return () => {
       window.removeEventListener(
         "sharedStateTableListBuild:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setModeCreate(event.detail || {});
+    };
+
+    window.addEventListener(
+      "sharedStateCreate:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateCreate:updated",
         handleSharedStateUpdate
       );
     };

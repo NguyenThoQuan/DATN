@@ -1,5 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { sharedStateTableList, sharedStateTableListBuild } from "shared-state";
+import {
+  sharedStateTableList,
+  sharedStateTableListBuild,
+  sharedStateCreate,
+} from "shared-state";
 import "./index.css";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
 import {
@@ -30,8 +34,9 @@ export default function Root() {
   const headerRef = React.useRef(null);
   const [id, setId] = useState();
   const [mode, setMode] = useState();
+  const [modeCreate, setModeCreate] = useState();
+  console.log(modeCreate);
   const [build, setBuild] = useState(sharedStateTableList || {});
-  console.log(build);
   const [height, setHeight] = useState(0);
   const [data, setData] = useState([]);
   const [dataColumn, setDataColumn] = useState(
@@ -172,6 +177,24 @@ export default function Root() {
 
   useEffect(() => {
     const handleSharedStateUpdate = (event) => {
+      setModeCreate(event.detail || {});
+    };
+
+    window.addEventListener(
+      "sharedStateCreate:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateCreate:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
       setMode(event.detail?.mode || {});
     };
 
@@ -233,7 +256,7 @@ export default function Root() {
         <Flex gap={"md"} justify={"flex-end"} align={"center"}>
           <Button
             leftIcon={<IconPlus size={"15px"} />}
-            className={`${build.createTable === "on" ? "" : "hidden"}`}
+            className={`${modeCreate?.createTable === "on" ? "" : "hidden"}`}
             onClick={() => modalCreate(dataColumn)}
           >
             Thêm mới
@@ -387,16 +410,18 @@ export default function Root() {
                   <Grid.Col span={6}>
                     <Checkbox
                       label="Thêm mới"
-                      checked={build.createTable === "on" ? true : false}
+                      checked={modeCreate?.createTable === "on" ? true : false}
                       classNames={{
                         label: "text-indigo-700",
                         input: "text-indigo-700 checked:bg-indigo-700",
                       }}
                       onClick={() => {
-                        if (build?.createTable === "on") {
-                          setBuild((prev) => ({ ...prev, createTable: "off" }));
+                        if (modeCreate?.createTable === "on") {
+                          setModeCreate("off");
+                          sharedStateCreate.setData({ createTable: "off" });
                         } else {
-                          setBuild((prev) => ({ ...prev, createTable: "on" }));
+                          setModeCreate("on");
+                          sharedStateCreate.setData({ createTable: "on" });
                         }
                       }}
                     />
