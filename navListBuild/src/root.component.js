@@ -124,7 +124,7 @@ export default function Root() {
         },
         body: JSON.stringify({
           mode: dataBuild?.mode,
-          tableList: sharedStateTableList.data?.tableListMode,
+          tableList: dataBuild?.tableList,
           createTable: modeCreate?.createTable,
           editTable: modeEdit?.editTable,
           deleteTable: modeDelete?.deleteTable,
@@ -171,6 +171,27 @@ export default function Root() {
       setOpen(false);
     }
   }, [dataBuild]);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setDataBuild((prev) => ({
+        ...prev,
+        tableList: event.detail?.tableListMode,
+      }));
+    };
+
+    window.addEventListener(
+      "sharedStateTableList:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateTableList:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
 
   useEffect(() => {
     const handleSharedStateUpdate = (event) => {

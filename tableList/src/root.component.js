@@ -48,7 +48,11 @@ export default function Root() {
   const [dataColumn, setDataColumn] = useState(
     sharedStateTableListBuild.dataColumn || []
   );
-  const [col, setCol] = useState({ accessorKey: "", header: "" });
+  const [col, setCol] = useState({
+    accessorKey: "",
+    header: "",
+    search: false,
+  });
   const [isCheckAK, setIsCheckAK] = useState(true);
   const [isOpenEdit, setIsOpenEdit] = useState(true);
 
@@ -99,8 +103,7 @@ export default function Root() {
     setIsCheckAK(!isDuplicate);
   };
 
-  const handleChangeSearch = (field) => (event) => {
-    const value = event.currentTarget?.value ?? "";
+  const handleChangeSearch = (field, value) => {
     setSearch((prev) => ({
       ...prev,
       [field]: value,
@@ -127,12 +130,16 @@ export default function Root() {
   const handleAddColumn = () => {
     if (col.accessorKey && col.header) {
       setDataColumn((prev) => [...prev, { ...col }]);
-      setCol({ accessorKey: "", header: "" });
+      setCol({ accessorKey: "", header: "", search: false });
     }
   };
 
-  const handleUpdateColumn = (oldAccessorKey, updatedFields) => {
-    if (!updatedFields.accessorKey || !updatedFields.header) return;
+  const handleUpdateColumn = (oldAccessorKey, updatedFields, field) => {
+    if (
+      (!updatedFields.accessorKey && field !== "search") ||
+      (!updatedFields.header && field !== "search")
+    )
+      return;
 
     const isDuplicate = dataColumn.some(
       (item) =>
@@ -140,7 +147,7 @@ export default function Root() {
         item.accessorKey !== oldAccessorKey
     );
 
-    if (isDuplicate) {
+    if (isDuplicate && field !== "search") {
       toast.error(
         "Khóa truy cập bạn vừa nhập đã tồn tại, vui lòng chọn khóa khác!"
       );
@@ -154,6 +161,37 @@ export default function Root() {
           : item
       )
     );
+  };
+
+  const getData = async () => {
+    try {
+      let url = `http://localhost:3000/api/dataTable${id}?_limit=10`;
+
+      Object.entries(search).forEach(([key, value]) => {
+        if (value && value.length > 0) {
+          const queryKey = key === "keySearch" ? "_q" : key;
+          url += `&${queryKey}=${encodeURIComponent(value)}`;
+        }
+      });
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Có lỗi xảy ra ở máy chủ!");
+        return;
+      } else {
+        setData(data?.data);
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
   };
 
   const modalCreate = (props) => {
@@ -288,9 +326,17 @@ export default function Root() {
   }, []);
 
   useEffect(() => {
-    if (dataColumn.length > 0) {
-      sharedStateTableListBuild.setData({ dataColumn: dataColumn });
-    }
+    sharedStateTableListBuild.setData({ dataColumn: dataColumn });
+
+    const newSearch = { keySearch: search.keySearch };
+
+    dataColumn.forEach((column) => {
+      if (column.search) {
+        newSearch[column.accessorKey] = search[column.accessorKey] || "";
+      }
+    });
+
+    setSearch(newSearch);
   }, [dataColumn]);
 
   useEffect(() => {
@@ -322,15 +368,47 @@ export default function Root() {
     data: data || [],
     renderTopToolbarCustomActions: () => (
       <Flex justify={"space-between"} w={"100%"}>
-        <Flex gap="md">
-          <TextInput
-            placeholder="Nhập từ khóa"
-            defaultValue={search.keySearch}
-            onChange={() => handleChangeSearch("keySearch")}
-          />
-          <Button leftIcon={<IconSearch size={"15px"} />}>Tìm kiếm</Button>
-        </Flex>
-        <Flex gap={"md"} justify={"flex-end"} align={"center"}>
+        <Grid grow w={"80%"}>
+          {dataColumn &&
+            dataColumn?.length > 0 &&
+            dataColumn
+              ?.filter(
+                (item) =>
+                  item.search !== false && item?.accessorKey !== "action"
+              )
+              ?.map((item, index) => (
+                <Grid.Col span={3} key={index}>
+                  <TextInput
+                    placeholder={item.header}
+                    defaultValue={search[item.accessorKey]}
+                    onChange={(e) => {
+                      handleChangeSearch(
+                        item.accessorKey,
+                        e.currentTarget.value
+                      );
+                    }}
+                  />
+                </Grid.Col>
+              ))}
+          <Grid.Col span={3}>
+            <TextInput
+              placeholder="Nhập từ khóa"
+              defaultValue={search.keySearch}
+              onChange={(e) =>
+                handleChangeSearch("keySearch", e.currentTarget.value)
+              }
+            />
+          </Grid.Col>
+          <Grid.Col span={3}>
+            <Button
+              leftIcon={<IconSearch size={"15px"} />}
+              onClick={() => getData()}
+            >
+              Tìm kiếm
+            </Button>
+          </Grid.Col>
+        </Grid>
+        <Flex gap={"md"} justify={"flex-end"} w={"20%"}>
           <Button
             leftIcon={<IconPlus size={"15px"} />}
             className={`${modeCreate?.createTable === "on" ? "" : "hidden"}`}
@@ -438,10 +516,14 @@ export default function Root() {
                               placeholder="Khóa truy cập"
                               value={item.accessorKey}
                               onChange={(e) =>
-                                handleUpdateColumn(item.accessorKey, {
-                                  accessorKey: e.currentTarget.value,
-                                  header: item.header,
-                                })
+                                handleUpdateColumn(
+                                  item.accessorKey,
+                                  {
+                                    accessorKey: e.currentTarget.value,
+                                    header: item.header,
+                                  },
+                                  "text"
+                                )
                               }
                               className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
@@ -455,10 +537,14 @@ export default function Root() {
                               placeholder="Tên trường dữ liệu"
                               value={item.header}
                               onChange={(e) =>
-                                handleUpdateColumn(item.accessorKey, {
-                                  accessorKey: item.accessorKey,
-                                  header: e.currentTarget.value,
-                                })
+                                handleUpdateColumn(
+                                  item.accessorKey,
+                                  {
+                                    accessorKey: item.accessorKey,
+                                    header: e.currentTarget.value,
+                                  },
+                                  "text"
+                                )
                               }
                               className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
@@ -492,13 +578,23 @@ export default function Root() {
                     dataColumn
                       .filter((item) => item.accessorKey !== "action")
                       .map((item, index) => (
-                        <Grid.Col span={6}>
+                        <Grid.Col span={6} key={index}>
                           <Checkbox
                             label={item.header}
+                            checked={item.search}
                             classNames={{
                               label: "text-indigo-700",
                               input: "text-indigo-700 checked:bg-indigo-700",
                             }}
+                            onClick={() =>
+                              handleUpdateColumn(
+                                item.accessorKey,
+                                {
+                                  search: item.search ? false : true,
+                                },
+                                "search"
+                              )
+                            }
                           />
                         </Grid.Col>
                       ))
@@ -591,6 +687,9 @@ export default function Root() {
             }
           >
             <button
+              onClick={() =>
+                sharedStateTableList.setData({ tableListMode: "off" })
+              }
               className={`${
                 isOpenEdit ? "" : "hidden"
               } bg-indigo-700 text-white px-4 py-2 rounded w-full font-bold transition duration-200 hover:bg-white hover:text-indigo-700 hover:border hover:border-indigo-700 hover:border-2`}
