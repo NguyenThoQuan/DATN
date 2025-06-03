@@ -4,7 +4,7 @@ import { IconCheck } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
-export default function ModalCreate({ props, id, setData }) {
+export default function ModalCreate({ props, id, setIsFetch }) {
   const [dataValueProps, setDataValueProps] = useState();
   const [isLoading, setIsLoading] = useState(false);
   console.log(id);
@@ -35,7 +35,7 @@ export default function ModalCreate({ props, id, setData }) {
         return;
       } else {
         setIsLoading(false);
-        setData((prev) => [dataValueProps, ...prev]);
+        setIsFetch((prev) => !prev);
         toast.success("Hoàn tất thêm mới dữ liệu !");
       }
     } catch (error) {
@@ -60,18 +60,23 @@ export default function ModalCreate({ props, id, setData }) {
       <Grid grow>
         {props &&
           props?.length > 0 &&
-          props?.map((item, index) => (
-            <Grid.Col span={4} key={index}>
-              <TextInput
-                label={item.header}
-                placeholder={item.header}
-                value={dataValueProps?.[item.accessorKey] || ""}
-                onChange={(event) =>
-                  handleInputChange(item.accessorKey, event.currentTarget.value)
-                }
-              />
-            </Grid.Col>
-          ))}
+          props
+            ?.filter((item) => item.accessorKey !== "action")
+            ?.map((item, index) => (
+              <Grid.Col span={4} key={index}>
+                <TextInput
+                  label={item.header}
+                  placeholder={item.header}
+                  value={dataValueProps?.[item.accessorKey] || ""}
+                  onChange={(event) =>
+                    handleInputChange(
+                      item.accessorKey,
+                      event.currentTarget.value
+                    )
+                  }
+                />
+              </Grid.Col>
+            ))}
       </Grid>
       <Flex justify={"center"} mt={"5px"}>
         <Button

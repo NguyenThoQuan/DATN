@@ -128,7 +128,6 @@ export default function Root() {
           createTable: modeCreate?.createTable,
           editTable: modeEdit?.editTable,
           deleteTable: modeDelete?.deleteTable,
-          dataTable: sharedStateTableList.data?.dataTable,
           dataColumn: dataTableListBuild?.dataColumn || [],
         }),
       });

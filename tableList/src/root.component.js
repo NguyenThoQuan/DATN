@@ -34,6 +34,7 @@ import { useDebouncedState } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { ModalsProvider } from "@mantine/modals";
 import ModalCreate from "./modalCreate.component";
+import ModalDelete from "./modalDelete.component";
 
 export default function Root() {
   const headerRef = React.useRef(null);
@@ -55,6 +56,7 @@ export default function Root() {
   });
   const [isCheckAK, setIsCheckAK] = useState(true);
   const [isOpenEdit, setIsOpenEdit] = useState(true);
+  const [isFetch, setIsFetch] = useState(false);
 
   const [search, setSearch] = useDebouncedState(
     {
@@ -84,7 +86,12 @@ export default function Root() {
               label="Xóa"
               className={`${modeDelete?.deleteTable === "on" ? "" : "hidden"}`}
             >
-              <ActionIcon variant="light" aria-label="Settings" color="red">
+              <ActionIcon
+                variant="light"
+                aria-label="Settings"
+                color="red"
+                onClick={() => modalDelete(row.original.id)}
+              >
                 <IconTrash size={"20px"} />
               </ActionIcon>
             </Tooltip>
@@ -200,11 +207,31 @@ export default function Root() {
       size: "auto",
       centered: true,
       zIndex: 1000,
-      children: <ModalCreate props={props} id={id} setData={setData} />,
+      children: <ModalCreate props={props} id={id} setIsFetch={setIsFetch} />,
       confirmProps: { display: "none" },
       cancelProps: { display: "none" },
     });
   };
+
+  const modalDelete = (idData) => {
+    modals.openConfirmModal({
+      title: <Text className="font-bold">Xóa dữ liệu</Text>,
+      size: "auto",
+      centered: true,
+      zIndex: 1000,
+      children: (
+        <ModalDelete idBuild={id} idData={idData} setIsFetch={setIsFetch} />
+      ),
+      confirmProps: { display: "none" },
+      cancelProps: { display: "none" },
+    });
+  };
+
+  useEffect(() => {
+    if (id) {
+      getData();
+    }
+  }, [isFetch]);
 
   useEffect(() => {
     const headerHeight = headerRef.current?.offsetHeight || 0;
