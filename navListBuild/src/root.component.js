@@ -18,6 +18,8 @@ import {
   sharedStateDelete,
   sharedStateExcel,
   sharedStateDataDesign,
+  sharedStateBarChart,
+  sharedStateDataBarChart,
 } from "shared-state";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -29,6 +31,8 @@ export default function Root() {
   const [modeEdit, setModeEdit] = useState();
   const [modeDelete, setModeDelete] = useState();
   const [excel, setExcel] = useState();
+  const [barChart, setBarChart] = useState();
+  const [dataBarChart, setDataBarChart] = useState({ dataKey: "", series: [] });
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChangeValue = (value, key) => {
@@ -85,6 +89,9 @@ export default function Root() {
     if (module === "Xuất Excel") {
       sharedStateExcel.setData({ excel: "on" });
     }
+    if (module === "Biểu đồ cột") {
+      sharedStateBarChart.setData({ barChart: "on" });
+    }
   };
 
   const getModule = async (id) => {
@@ -110,6 +117,11 @@ export default function Root() {
           tableListMode: data[0]?.tableList,
           dataTable: data[0]?.dataTable,
         });
+        sharedStateDataBarChart.setData({
+          dataKey: data[0]?.dataBarChart?.dataKey,
+          series: data[0]?.dataBarChart?.series,
+        });
+        sharedStateBarChart.setData({ barChart: data[0]?.barChart });
         sharedStateCreate.setData({ createTable: data[0]?.createTable });
         sharedStateEdit.setData({ editTable: data[0]?.editTable });
         sharedStateDelete.setData({ deleteTable: data[0]?.deleteTable });
@@ -137,6 +149,8 @@ export default function Root() {
           editTable: modeEdit?.editTable,
           deleteTable: modeDelete?.deleteTable,
           dataColumn: dataTableListBuild?.dataColumn || [],
+          barChart: barChart,
+          dataBarChart: dataBarChart,
           excel: excel,
         }),
       });
@@ -288,6 +302,45 @@ export default function Root() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setBarChart(event.detail?.barChart || []);
+    };
+
+    window.addEventListener(
+      "sharedStateBarChart:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateBarChart:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setDataBarChart({
+        dataKey: event.detail.dataKey,
+        series: event.detail.series,
+      });
+    };
+
+    window.addEventListener(
+      "sharedStateDataBarChart:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateDataBarChart:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
   return (
     <>
       <Toaster />
@@ -297,18 +350,20 @@ export default function Root() {
             dataBuild?.createById !==
               JSON.parse(localStorage.getItem("userLogin")).id &&
             dataBuild.mode === "user") ||
-          !dataBuild?.collab?.some(
+          (!dataBuild?.collab?.some(
             (item) =>
               item.id === JSON.parse(localStorage.getItem("userLogin")).id
-          )
+          ) &&
+            dataBuild?.createById !==
+              JSON.parse(localStorage.getItem("userLogin")).id)
             ? "hidden"
             : ""
-        } w-full flex relative`}
+        } w-full h-full flex relative`}
       >
         <div
           className={`${
             open ? "w-72 p-5" : "w-20 p-4"
-          } bg-indigo-700 h-[calc(100vh-65px)] pt-8 relative duration-300 ease-in-out`}
+          } bg-indigo-700 h-full pt-8 relative duration-300 ease-in-out`}
         >
           <div
             className={`absolute cursor-pointer -right-4 top-9 w-8 h-8 p-0.5 bg-zinc-50 border-zinc-50 border-2 rounded-full text-xl flex items-center justify-center ${

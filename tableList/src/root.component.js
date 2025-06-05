@@ -673,11 +673,15 @@ export default function Root() {
       >
         <div
           className={`${
-            mode === "user" ||
-            !dataD?.collab?.some(
+            (mode === "user" &&
+              dataD?.createById !==
+                JSON.parse(localStorage.getItem("userLogin")).id) ||
+            (!dataD?.collab?.some(
               (item) =>
                 item.id === JSON.parse(localStorage.getItem("userLogin")).id
-            )
+            ) &&
+              dataD?.createById !==
+                JSON.parse(localStorage.getItem("userLogin")).id)
               ? "col-span-3"
               : "col-span-1 lg:col-span-2"
           } w-full`}
@@ -688,11 +692,15 @@ export default function Root() {
           className={`relative p-2 bg-indigo-50 rounded-lg shadow col-span-1 w-full transition-all duration-300 overflow-hidden ${
             isOpenEdit ? "w-full" : "w-[45px] flex items-center justify-center"
           } ${
-            mode === "user" ||
-            !dataD?.collab?.some(
+            (mode === "user" &&
+              dataD?.createById !==
+                JSON.parse(localStorage.getItem("userLogin")).id) ||
+            (!dataD?.collab?.some(
               (item) =>
                 item.id === JSON.parse(localStorage.getItem("userLogin")).id
-            )
+            ) &&
+              dataD?.createById !==
+                JSON.parse(localStorage.getItem("userLogin")).id)
               ? "hidden"
               : ""
           }`}

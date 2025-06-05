@@ -93,3 +93,27 @@ export const sharedStateExcel = {
     );
   },
 };
+
+export const sharedStateBarChart = {
+  data: { barChart: "off" },
+  setData(newData) {
+    this.data = { ...this.data, ...newData };
+    window.dispatchEvent(
+      new CustomEvent("sharedStateBarChart:updated", {
+        detail: this.data,
+      })
+    );
+  },
+};
+
+export const sharedStateDataBarChart = {
+  data: { dataKey: "", series: "" },
+  setData(newData) {
+    this.data = { ...this.data, ...newData };
+    window.dispatchEvent(
+      new CustomEvent("sharedStateDataBarChart:updated", {
+        detail: this.data,
+      })
+    );
+  },
+};
