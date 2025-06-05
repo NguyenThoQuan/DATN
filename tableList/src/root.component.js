@@ -52,16 +52,12 @@ export default function Root() {
   const [dataColumn, setDataColumn] = useState(
     sharedStateTableListBuild.dataColumn || []
   );
-  console.log(dataColumn);
-  const [col, setCol] = useDebouncedState(
-    {
-      accessorKey: "",
-      header: "",
-      search: false,
-      size: 200,
-    },
-    300
-  );
+  const [col, setCol] = useState({
+    accessorKey: "",
+    header: "",
+    search: false,
+    size: "200",
+  });
   const [columnPining, setColumnPining] = useState({
     left: [],
     right: [],
@@ -83,6 +79,7 @@ export default function Root() {
     return dataColumn.map((col) => ({
       accessorKey: col.accessorKey || "defaultKey",
       header: col.header || "Default Header",
+      size: Number(col.size),
       ...(col.accessorKey === "action" && {
         Cell: ({ row }) => (
           <Flex justify={"start"} align={"center"} gap={"xs"}>
@@ -160,8 +157,8 @@ export default function Root() {
 
   const handleUpdateColumn = (oldAccessorKey, updatedFields, field) => {
     if (
-      (!updatedFields.accessorKey && field !== "search") ||
-      (!updatedFields.header && field !== "search")
+      (!updatedFields.accessorKey && field !== "search" && field !== "size") ||
+      (!updatedFields.header && field !== "search" && field !== "size")
     )
       return;
 
@@ -171,7 +168,7 @@ export default function Root() {
         item.accessorKey !== oldAccessorKey
     );
 
-    if (isDuplicate && field !== "search") {
+    if (isDuplicate && field !== "search" && field !== "size") {
       toast.error(
         "Khóa truy cập bạn vừa nhập đã tồn tại, vui lòng chọn khóa khác!"
       );
@@ -577,14 +574,14 @@ export default function Root() {
                       <input
                         type="text"
                         placeholder="Khóa truy cập"
-                        defaultValue={col.accessorKey}
+                        value={col.accessorKey}
                         onChange={handleInputChange("accessorKey")}
                         className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                       <input
                         type="text"
                         placeholder="Tên trường dữ liệu"
-                        defaultValue={col.header}
+                        value={col.header}
                         onChange={handleInputChange("header")}
                         className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
@@ -612,112 +609,133 @@ export default function Root() {
                       dataColumn
                         .filter((item) => item.accessorKey !== "action")
                         .map((item, index) => (
-                          <div
-                            key={index}
-                            className="flex flex-col gap-1 sm:flex-row sm:gap-2 items-start sm:items-center justify-between mt-1"
-                          >
-                            <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
-                              <span className="text-indigo-700 font-semibold text-sm">
-                                Khóa truy cập
-                              </span>
-                              <input
-                                type="text"
-                                placeholder="Khóa truy cập"
-                                value={item.accessorKey}
-                                onChange={(e) =>
-                                  handleUpdateColumn(
-                                    item.accessorKey,
-                                    {
-                                      accessorKey: e.currentTarget.value,
-                                      header: item.header,
-                                    },
-                                    "text"
-                                  )
-                                }
-                                className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              />
-                            </label>
-                            <label className="flex flex-col gap-1 w-full sm:flex-[6] sm:w-auto">
-                              <span className="text-indigo-700 font-semibold text-sm">
-                                Trường dữ liệu
-                              </span>
-                              <input
-                                type="text"
-                                placeholder="Tên trường dữ liệu"
-                                value={item.header}
-                                onChange={(e) =>
-                                  handleUpdateColumn(
-                                    item.accessorKey,
-                                    {
-                                      accessorKey: item.accessorKey,
-                                      header: e.currentTarget.value,
-                                    },
-                                    "text"
-                                  )
-                                }
-                                className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              />
-                            </label>
-                            <div className="flex gap-1 w-full sm:flex-[1] sm:w-auto">
-                              <Tooltip label="Ghim">
-                                <Menu>
-                                  <Menu.Target>
-                                    <IconPin className="text-indigo-700 p-[1px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
-                                  </Menu.Target>
-                                  <Menu.Dropdown className="w-full">
-                                    <Menu.Item
-                                      onClick={() => {
-                                        const leftPin = [
-                                          ...(columnPining?.left || []),
-                                          item.accessorKey,
-                                        ];
-                                        const rightPin = (
-                                          columnPining?.right || []
-                                        ).filter(
-                                          (key) => key !== item.accessorKey
-                                        );
+                          <div className="flex flex-col gap-2" key={index}>
+                            <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 items-start sm:items-center justify-between mt-1">
+                              <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
+                                <span className="text-indigo-700 font-semibold text-sm">
+                                  Khóa truy cập
+                                </span>
+                                <input
+                                  type="text"
+                                  placeholder="Khóa truy cập"
+                                  value={item.accessorKey}
+                                  onChange={(e) =>
+                                    handleUpdateColumn(
+                                      item.accessorKey,
+                                      {
+                                        accessorKey: e.currentTarget.value,
+                                        header: item.header,
+                                      },
+                                      "text"
+                                    )
+                                  }
+                                  className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                              </label>
+                              <label className="flex flex-col gap-1 w-full sm:flex-[6] sm:w-auto">
+                                <span className="text-indigo-700 font-semibold text-sm">
+                                  Trường dữ liệu
+                                </span>
+                                <input
+                                  type="text"
+                                  placeholder="Tên trường dữ liệu"
+                                  value={item.header}
+                                  onChange={(e) =>
+                                    handleUpdateColumn(
+                                      item.accessorKey,
+                                      {
+                                        accessorKey: item.accessorKey,
+                                        header: e.currentTarget.value,
+                                      },
+                                      "text"
+                                    )
+                                  }
+                                  className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                              </label>
+                              <div className="flex gap-1 w-full sm:flex-[1] sm:w-auto">
+                                <Tooltip label="Ghim">
+                                  <Menu>
+                                    <Menu.Target>
+                                      <IconPin className="text-indigo-700 p-[1px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
+                                    </Menu.Target>
+                                    <Menu.Dropdown className="w-full">
+                                      <Menu.Item
+                                        onClick={() => {
+                                          const leftPin = [
+                                            ...(columnPining?.left || []),
+                                            item.accessorKey,
+                                          ];
+                                          const rightPin = (
+                                            columnPining?.right || []
+                                          ).filter(
+                                            (key) => key !== item.accessorKey
+                                          );
 
-                                        setColumnPining({
-                                          left: leftPin,
-                                          right: rightPin,
-                                        });
-                                      }}
-                                    >
-                                      <Text>Ghim bên trái</Text>
-                                    </Menu.Item>
-                                    <Menu.Item
-                                      onClick={() => {
-                                        const rightPin = [
-                                          ...(columnPining?.right || []),
-                                          item.accessorKey,
-                                        ];
-                                        const leftPin = (
-                                          columnPining?.left || []
-                                        ).filter(
-                                          (key) => key !== item.accessorKey
-                                        );
+                                          setColumnPining({
+                                            left: leftPin,
+                                            right: rightPin,
+                                          });
+                                        }}
+                                      >
+                                        <Text>Ghim bên trái</Text>
+                                      </Menu.Item>
+                                      <Menu.Item
+                                        onClick={() => {
+                                          const rightPin = [
+                                            ...(columnPining?.right || []),
+                                            item.accessorKey,
+                                          ];
+                                          const leftPin = (
+                                            columnPining?.left || []
+                                          ).filter(
+                                            (key) => key !== item.accessorKey
+                                          );
 
-                                        setColumnPining({
-                                          left: leftPin,
-                                          right: rightPin,
-                                        });
-                                      }}
-                                    >
-                                      <Text>Ghim bên phải</Text>
-                                    </Menu.Item>
-                                  </Menu.Dropdown>
-                                </Menu>
-                              </Tooltip>
+                                          setColumnPining({
+                                            left: leftPin,
+                                            right: rightPin,
+                                          });
+                                        }}
+                                      >
+                                        <Text>Ghim bên phải</Text>
+                                      </Menu.Item>
+                                    </Menu.Dropdown>
+                                  </Menu>
+                                </Tooltip>
+                              </div>
+                              <div
+                                className="flex gap-1 w-full sm:flex-[1] sm:w-auto"
+                                onClick={() =>
+                                  handleDeleteColumn(item.accessorKey)
+                                }
+                              >
+                                <Tooltip label="Xóa">
+                                  <IconTrash className="text-indigo-700 p-[1px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
+                                </Tooltip>
+                              </div>
                             </div>
-                            <div
-                              className="flex gap-1 w-full sm:flex-[1] sm:w-auto"
-                              onClick={() =>
-                                handleDeleteColumn(item.accessorKey)
-                              }
-                            >
-                              <Tooltip label="Xóa">
-                                <IconTrash className="text-indigo-700 p-[1px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
-                              </Tooltip>
+                            <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 items-start sm:items-center justify-between mt-1">
+                              <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
+                                <span className="text-indigo-700 font-semibold text-sm">
+                                  Kích thước cột
+                                </span>
+                                <input
+                                  type="number"
+                                  placeholder="Khóa truy cập"
+                                  value={item.size}
+                                  onChange={(e) =>
+                                    handleUpdateColumn(
+                                      item.accessorKey,
+                                      {
+                                        size: e.target.value,
+                                      },
+                                      "size"
+                                    )
+                                  }
+                                  className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                              </label>
                             </div>
                           </div>
                         ))
