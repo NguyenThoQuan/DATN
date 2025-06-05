@@ -1,11 +1,12 @@
-import { Box, Button, Grid, TextInput, Flex } from "@mantine/core";
-import { modals } from "@mantine/modals";
-import { IconCheck } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import { Box, Grid, TextInput, Flex, Button } from "@mantine/core";
+import { IconCheck } from "@tabler/icons-react";
+import { modals } from "@mantine/modals";
 
-export default function ModalCreate({ props, id, setIsFetch }) {
+export default function ModalEdit({ props, idData, id, setIsFetch }) {
   const [dataValueProps, setDataValueProps] = useState();
+  const [isCallAPI, setIsCallAPI] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (key, value) => {
@@ -15,12 +16,39 @@ export default function ModalCreate({ props, id, setIsFetch }) {
     }));
   };
 
-  const createDataTable = async () => {
+  const getDataDetail = async () => {
+    try {
+      let url = `http://localhost:3000/api/dataTable${id}/${idData}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Có lỗi xảy ra ở máy chủ!");
+        return;
+      } else {
+        if (dataValueProps !== undefined) {
+          setDataValueProps(data);
+          setIsCallAPI(false);
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
+  };
+
+  const updateData = async () => {
     setIsLoading(true);
     try {
-      const url = `http://localhost:3000/api/build/${id}/dataTable`;
+      const url = `http://localhost:3000/api/build/${id}/dataTable/${idData}`;
       const response = await fetch(url, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -35,7 +63,7 @@ export default function ModalCreate({ props, id, setIsFetch }) {
       } else {
         setIsLoading(false);
         setIsFetch((prev) => !prev);
-        toast.success("Hoàn tất thêm mới dữ liệu !");
+        toast.success("Hoàn tất lưu tùy chỉnh !");
       }
     } catch (error) {
       console.error("Lỗi:", error);
@@ -53,9 +81,14 @@ export default function ModalCreate({ props, id, setIsFetch }) {
     setDataValueProps(initialState);
   }, [props]);
 
+  useEffect(() => {
+    if (dataValueProps !== undefined && isCallAPI) {
+      getDataDetail();
+    }
+  }, [dataValueProps]);
+
   return (
     <Box>
-      <Toaster />
       <Grid grow>
         {props &&
           props?.length > 0 &&
@@ -83,7 +116,7 @@ export default function ModalCreate({ props, id, setIsFetch }) {
           disabled={isLoading}
           loading={isLoading}
           onClick={() => {
-            createDataTable();
+            updateData();
             modals.closeAll();
           }}
         >

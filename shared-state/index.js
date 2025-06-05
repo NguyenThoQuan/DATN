@@ -59,3 +59,15 @@ export const sharedStateTableListBuild = {
     );
   },
 };
+
+export const sharedStateColumnPining = {
+  data: { columnPining: {} },
+  setData(newData) {
+    this.data = { ...this.data, ...newData };
+    window.dispatchEvent(
+      new CustomEvent("sharedStateColumnPining:updated", {
+        detail: this.data,
+      })
+    );
+  },
+};

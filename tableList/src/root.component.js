@@ -15,6 +15,7 @@ import {
   IconSearch,
   IconPlus,
   IconEdit,
+  IconPin,
 } from "@tabler/icons-react";
 import {
   Divider,
@@ -27,6 +28,7 @@ import {
   Checkbox,
   Tooltip,
   ActionIcon,
+  Menu,
 } from "@mantine/core";
 import toast, { Toaster } from "react-hot-toast";
 import "regenerator-runtime/runtime";
@@ -35,6 +37,7 @@ import { modals } from "@mantine/modals";
 import { ModalsProvider } from "@mantine/modals";
 import ModalCreate from "./modalCreate.component";
 import ModalDelete from "./modalDelete.component";
+import ModalEdit from "./modalEdit.component";
 
 export default function Root() {
   const headerRef = React.useRef(null);
@@ -46,14 +49,22 @@ export default function Root() {
   const [build, setBuild] = useState(sharedStateTableList || {});
   const [height, setHeight] = useState(0);
   const [data, setData] = useState([]);
-  const [dataColumn, setDataColumn] = useState(
+  const [dataColumn, setDataColumn] = useDebouncedState(
     sharedStateTableListBuild.dataColumn || []
   );
-  const [col, setCol] = useState({
-    accessorKey: "",
-    header: "",
-    search: false,
+  const [col, setCol] = useDebouncedState(
+    {
+      accessorKey: "",
+      header: "",
+      search: false,
+    },
+    300
+  );
+  const [columnPining, setColumnPining] = useState({
+    left: [],
+    right: [],
   });
+  console.log(columnPining);
   const [isCheckAK, setIsCheckAK] = useState(true);
   const [isOpenEdit, setIsOpenEdit] = useState(true);
   const [isFetch, setIsFetch] = useState(false);
@@ -78,7 +89,12 @@ export default function Root() {
               label="Chỉnh sửa"
               className={`${modeEdit?.editTable === "on" ? "" : "hidden"}`}
             >
-              <ActionIcon variant="light" aria-label="Settings" color="yellow">
+              <ActionIcon
+                variant="light"
+                aria-label="Settings"
+                color="yellow"
+                onClick={() => modalEdit(dataColumn, row.original.id)}
+              >
                 <IconEdit size={"20px"} />
               </ActionIcon>
             </Tooltip>
@@ -99,7 +115,7 @@ export default function Root() {
         ),
       }),
     }));
-  }, [dataColumn, modeEdit, modeDelete]);
+  }, [dataColumn, modeEdit, modeDelete, columnPining]);
 
   const checkDuplicateAccessorKey = (key) => {
     if (!key) {
@@ -201,27 +217,51 @@ export default function Root() {
     }
   };
 
-  const modalCreate = (props) => {
+  const modalCreate = (props, idData) => {
     modals.openConfirmModal({
       title: <Text className="font-bold">Thêm mới</Text>,
       size: "auto",
       centered: true,
       zIndex: 1000,
-      children: <ModalCreate props={props} id={id} setIsFetch={setIsFetch} />,
+      children: (
+        <ModalCreate
+          props={props}
+          idData={idData}
+          id={id}
+          setIsFetch={setIsFetch}
+        />
+      ),
       confirmProps: { display: "none" },
       cancelProps: { display: "none" },
     });
   };
 
-  const modalDelete = (idData) => {
+  const modalEdit = (props, idData) => {
+    modals.openConfirmModal({
+      title: <Text className="font-bold">Chỉnh sửa</Text>,
+      size: "auto",
+      centered: true,
+      zIndex: 1000,
+      children: (
+        <ModalEdit
+          props={props}
+          idData={idData}
+          id={id}
+          setIsFetch={setIsFetch}
+        />
+      ),
+      confirmProps: { display: "none" },
+      cancelProps: { display: "none" },
+    });
+  };
+
+  const modalDelete = () => {
     modals.openConfirmModal({
       title: <Text className="font-bold">Xóa dữ liệu</Text>,
       size: "auto",
       centered: true,
       zIndex: 1000,
-      children: (
-        <ModalDelete idBuild={id} idData={idData} setIsFetch={setIsFetch} />
-      ),
+      children: <ModalDelete idBuild={id} setIsFetch={setIsFetch} />,
       confirmProps: { display: "none" },
       cancelProps: { display: "none" },
     });
@@ -393,6 +433,10 @@ export default function Root() {
   const table = useMantineReactTable({
     columns,
     data: data || [],
+    state: {
+      columnPining,
+    },
+    onColumnPinningChange: setColumnPining,
     renderTopToolbarCustomActions: () => (
       <Flex justify={"space-between"} w={"100%"}>
         <Grid grow w={"80%"}>
@@ -447,6 +491,9 @@ export default function Root() {
       </Flex>
     ),
     renderToolbarInternalActions: () => <></>,
+    initialState: {
+      columnPinning: columnPining,
+    },
     mantineTableContainerProps: {
       style: { maxHeight: height, minHeight: height },
     },
@@ -467,264 +514,325 @@ export default function Root() {
         >
           <MantineReactTable table={table} />
         </div>
-        <div
-          className={`relative p-2 bg-indigo-50 rounded-lg shadow col-span-1 w-full transition-all duration-300 overflow-hidden ${
-            isOpenEdit ? "w-full" : "w-[45px] flex items-center justify-center"
-          } ${mode === "user" ? "hidden" : ""}`}
-        >
-          {isOpenEdit ? (
-            <>
-              <div className="flex justify-between items-center w-full">
-                <IconChevronRight
-                  className="text-indigo-700 p-1 hover:bg-indigo-800 hover:text-white cursor-pointer rounded-3xl duration-200 hidden lg:block"
-                  onClick={() => setIsOpenEdit(false)}
-                />
-                <h2 className="text-xl font-bold text-indigo-700 uppercase">
-                  Tùy chỉnh
-                </h2>
-              </div>
-              <ScrollArea h={1050}>
-                <Divider
-                  my="xs"
-                  label="Thêm trường dữ liệu"
-                  labelPosition="center"
-                  className="text-indigo-700 font-bold"
-                />
-                <div>
-                  <div className="flex flex-col gap-2 mt-1">
-                    <input
-                      type="text"
-                      placeholder="Khóa truy cập"
-                      value={col.accessorKey}
-                      onChange={handleInputChange("accessorKey")}
-                      className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Tên trường dữ liệu"
-                      value={col.header}
-                      onChange={handleInputChange("header")}
-                      className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                    <button
-                      className={`text-white text-sm py-2 px-4 rounded-md transition-colors ${
-                        isCheckAK
-                          ? "bg-indigo-700 hover:bg-indigo-800"
-                          : "bg-gray-500 cursor-not-allowed"
-                      }`}
-                      onClick={handleAddColumn}
-                      disabled={!isCheckAK}
-                    >
-                      {isCheckAK
-                        ? "Thêm mới"
-                        : "Khóa truy cập không được trùng lặp !"}
-                    </button>
-                  </div>
+        <ScrollArea h={"90vh"}>
+          <div
+            className={`relative p-2 bg-indigo-50 rounded-lg shadow col-span-1 w-full transition-all duration-300 overflow-hidden ${
+              isOpenEdit
+                ? "w-full"
+                : "w-[45px] flex items-center justify-center"
+            } ${mode === "user" ? "hidden" : ""}`}
+          >
+            {isOpenEdit ? (
+              <>
+                <div className="flex justify-between items-center w-full">
+                  <IconChevronRight
+                    className="text-indigo-700 p-1 hover:bg-indigo-800 hover:text-white cursor-pointer rounded-3xl duration-200 hidden lg:block"
+                    onClick={() => setIsOpenEdit(false)}
+                  />
+                  <h2 className="text-xl font-bold text-indigo-700 uppercase">
+                    Tùy chỉnh
+                  </h2>
+                </div>
+                <ScrollArea h={1050}>
                   <Divider
                     my="xs"
-                    label="Thao tác trường dữ liệu"
+                    label="Thêm trường dữ liệu"
                     labelPosition="center"
                     className="text-indigo-700 font-bold"
                   />
-                  {dataColumn && dataColumn.length > 0 ? (
-                    dataColumn
-                      .filter((item) => item.accessorKey !== "action")
-                      .map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex flex-col gap-1 sm:flex-row sm:gap-4 items-start sm:items-center justify-between mt-1"
-                        >
-                          <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
-                            <span className="text-indigo-700 font-semibold text-sm">
-                              Khóa truy cập
-                            </span>
-                            <input
-                              type="text"
-                              placeholder="Khóa truy cập"
-                              value={item.accessorKey}
-                              onChange={(e) =>
-                                handleUpdateColumn(
-                                  item.accessorKey,
-                                  {
-                                    accessorKey: e.currentTarget.value,
-                                    header: item.header,
-                                  },
-                                  "text"
-                                )
-                              }
-                              className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                          </label>
-                          <label className="flex flex-col gap-1 w-full sm:flex-[6] sm:w-auto">
-                            <span className="text-indigo-700 font-semibold text-sm">
-                              Trường dữ liệu
-                            </span>
-                            <input
-                              type="text"
-                              placeholder="Tên trường dữ liệu"
-                              value={item.header}
-                              onChange={(e) =>
-                                handleUpdateColumn(
-                                  item.accessorKey,
-                                  {
-                                    accessorKey: item.accessorKey,
-                                    header: e.currentTarget.value,
-                                  },
-                                  "text"
-                                )
-                              }
-                              className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                          </label>
+                  <div>
+                    <div className="flex flex-col gap-2 mt-1">
+                      <input
+                        type="text"
+                        placeholder="Khóa truy cập"
+                        defaultValue={col.accessorKey}
+                        onChange={handleInputChange("accessorKey")}
+                        className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Tên trường dữ liệu"
+                        defaultValue={col.header}
+                        onChange={handleInputChange("header")}
+                        className="flex-1 p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <button
+                        className={`text-white text-sm py-2 px-4 rounded-md transition-colors ${
+                          isCheckAK
+                            ? "bg-indigo-700 hover:bg-indigo-800"
+                            : "bg-gray-500 cursor-not-allowed"
+                        }`}
+                        onClick={handleAddColumn}
+                        disabled={!isCheckAK}
+                      >
+                        {isCheckAK
+                          ? "Thêm mới"
+                          : "Khóa truy cập không được trùng lặp !"}
+                      </button>
+                    </div>
+                    <Divider
+                      my="xs"
+                      label="Thao tác trường dữ liệu"
+                      labelPosition="center"
+                      className="text-indigo-700 font-bold"
+                    />
+                    {dataColumn && dataColumn.length > 0 ? (
+                      dataColumn
+                        .filter((item) => item.accessorKey !== "action")
+                        .map((item, index) => (
                           <div
-                            className="flex flex-col gap-1 w-full sm:flex-[1] sm:w-auto"
-                            onClick={() => handleDeleteColumn(item.accessorKey)}
+                            key={index}
+                            className="flex flex-col gap-1 sm:flex-row sm:gap-2 items-start sm:items-center justify-between mt-1"
                           >
-                            <Tooltip label="Xóa">
-                              <IconTrash className="text-indigo-700 p-[2px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
-                            </Tooltip>
+                            <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
+                              <span className="text-indigo-700 font-semibold text-sm">
+                                Khóa truy cập
+                              </span>
+                              <input
+                                type="text"
+                                placeholder="Khóa truy cập"
+                                value={item.accessorKey}
+                                onChange={(e) =>
+                                  handleUpdateColumn(
+                                    item.accessorKey,
+                                    {
+                                      accessorKey: e.currentTarget.value,
+                                      header: item.header,
+                                    },
+                                    "text"
+                                  )
+                                }
+                                className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              />
+                            </label>
+                            <label className="flex flex-col gap-1 w-full sm:flex-[6] sm:w-auto">
+                              <span className="text-indigo-700 font-semibold text-sm">
+                                Trường dữ liệu
+                              </span>
+                              <input
+                                type="text"
+                                placeholder="Tên trường dữ liệu"
+                                value={item.header}
+                                onChange={(e) =>
+                                  handleUpdateColumn(
+                                    item.accessorKey,
+                                    {
+                                      accessorKey: item.accessorKey,
+                                      header: e.currentTarget.value,
+                                    },
+                                    "text"
+                                  )
+                                }
+                                className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              />
+                            </label>
+                            <div className="flex gap-1 w-full sm:flex-[1] sm:w-auto">
+                              <Tooltip label="Ghim">
+                                <Menu>
+                                  <Menu.Target>
+                                    <IconPin className="text-indigo-700 p-[1px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
+                                  </Menu.Target>
+                                  <Menu.Dropdown className="w-full">
+                                    <Menu.Item
+                                      onClick={() => {
+                                        const leftPin = [
+                                          ...(columnPining?.left || []),
+                                          item.accessorKey,
+                                        ];
+                                        const rightPin = (
+                                          columnPining?.right || []
+                                        ).filter(
+                                          (key) => key !== item.accessorKey
+                                        );
+
+                                        setColumnPining({
+                                          left: leftPin,
+                                          right: rightPin,
+                                        });
+                                      }}
+                                    >
+                                      <Text>Ghim bên trái</Text>
+                                    </Menu.Item>
+                                    <Menu.Item
+                                      onClick={() => {
+                                        const rightPin = [
+                                          ...(columnPining?.right || []),
+                                          item.accessorKey,
+                                        ];
+                                        const leftPin = (
+                                          columnPining?.left || []
+                                        ).filter(
+                                          (key) => key !== item.accessorKey
+                                        );
+
+                                        setColumnPining({
+                                          left: leftPin,
+                                          right: rightPin,
+                                        });
+                                      }}
+                                    >
+                                      <Text>Ghim bên phải</Text>
+                                    </Menu.Item>
+                                  </Menu.Dropdown>
+                                </Menu>
+                              </Tooltip>
+                            </div>
+                            <div
+                              className="flex gap-1 w-full sm:flex-[1] sm:w-auto"
+                              onClick={() =>
+                                handleDeleteColumn(item.accessorKey)
+                              }
+                            >
+                              <Tooltip label="Xóa">
+                                <IconTrash className="text-indigo-700 p-[1px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
+                              </Tooltip>
+                            </div>
                           </div>
-                        </div>
-                      ))
-                  ) : (
-                    <div className="text-center w-full">
-                      <span className="text-1xl font-bold mb-4 mt-4 text-gray-500 italic text-center">
-                        Bạn chưa thêm trường dữ liệu nào !
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <Divider
-                  my="xs"
-                  label="Thêm bộ lọc"
-                  labelPosition="center"
-                  className="text-indigo-700 font-bold"
-                />
-                <Grid>
-                  {dataColumn && dataColumn.length > 0 ? (
-                    dataColumn
-                      .filter((item) => item.accessorKey !== "action")
-                      .map((item, index) => (
-                        <Grid.Col span={6} key={index}>
-                          <Checkbox
-                            label={item.header}
-                            checked={item.search}
-                            classNames={{
-                              label: "text-indigo-700",
-                              input: "text-indigo-700 checked:bg-indigo-700",
-                            }}
-                            onClick={() =>
-                              handleUpdateColumn(
-                                item.accessorKey,
-                                {
-                                  search: item.search ? false : true,
-                                },
-                                "search"
-                              )
-                            }
-                          />
-                        </Grid.Col>
-                      ))
-                  ) : (
-                    <div className="text-center w-full">
-                      <span className="text-1xl font-bold mb-4 mt-4 text-gray-500 italic text-center">
-                        Bạn chưa thêm trường dữ liệu nào !
-                      </span>
-                    </div>
-                  )}
-                </Grid>
-                <Divider
-                  my="xs"
-                  label="Thao tác bảng"
-                  labelPosition="center"
-                  className="text-indigo-700 font-bold"
-                />
-                <Grid grow>
-                  <Grid.Col span={6}>
-                    <Checkbox
-                      label="Thêm mới"
-                      checked={modeCreate?.createTable === "on" ? true : false}
-                      classNames={{
-                        label: "text-indigo-700",
-                        input: "text-indigo-700 checked:bg-indigo-700",
-                      }}
-                      onClick={() => {
-                        if (modeCreate?.createTable === "on") {
-                          setModeCreate("off");
-                          sharedStateCreate.setData({ createTable: "off" });
-                        } else {
-                          setModeCreate("on");
-                          sharedStateCreate.setData({ createTable: "on" });
+                        ))
+                    ) : (
+                      <div className="text-center w-full">
+                        <span className="text-1xl font-bold mb-4 mt-4 text-gray-500 italic text-center">
+                          Bạn chưa thêm trường dữ liệu nào !
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <Divider
+                    my="xs"
+                    label="Thêm bộ lọc"
+                    labelPosition="center"
+                    className="text-indigo-700 font-bold"
+                  />
+                  <Grid>
+                    {dataColumn && dataColumn.length > 0 ? (
+                      dataColumn
+                        .filter((item) => item.accessorKey !== "action")
+                        .map((item, index) => (
+                          <Grid.Col span={6} key={index}>
+                            <Checkbox
+                              label={item.header}
+                              checked={item.search}
+                              classNames={{
+                                label: "text-indigo-700",
+                                input: "text-indigo-700 checked:bg-indigo-700",
+                              }}
+                              onClick={() =>
+                                handleUpdateColumn(
+                                  item.accessorKey,
+                                  {
+                                    search: item.search ? false : true,
+                                  },
+                                  "search"
+                                )
+                              }
+                            />
+                          </Grid.Col>
+                        ))
+                    ) : (
+                      <div className="text-center w-full">
+                        <span className="text-1xl font-bold mb-4 mt-4 text-gray-500 italic text-center">
+                          Bạn chưa thêm trường dữ liệu nào !
+                        </span>
+                      </div>
+                    )}
+                  </Grid>
+                  <Divider
+                    my="xs"
+                    label="Thao tác bảng"
+                    labelPosition="center"
+                    className="text-indigo-700 font-bold"
+                  />
+                  <Grid grow>
+                    <Grid.Col span={6}>
+                      <Checkbox
+                        label="Thêm mới"
+                        checked={
+                          modeCreate?.createTable === "on" ? true : false
                         }
-                      }}
-                    />
-                  </Grid.Col>
-                  <Grid.Col span={6}>
-                    <Checkbox
-                      label="Chỉnh sửa"
-                      checked={modeEdit?.editTable === "on" ? true : false}
-                      classNames={{
-                        label: "text-indigo-700",
-                        input: "text-indigo-700 checked:bg-indigo-700",
-                      }}
-                      onClick={() => {
-                        if (modeEdit?.editTable === "on") {
-                          setModeEdit("off");
-                          sharedStateEdit.setData({ editTable: "off" });
-                        } else {
-                          setModeEdit("on");
-                          sharedStateEdit.setData({ editTable: "on" });
+                        classNames={{
+                          label: "text-indigo-700",
+                          input: "text-indigo-700 checked:bg-indigo-700",
+                        }}
+                        onClick={() => {
+                          if (modeCreate?.createTable === "on") {
+                            setModeCreate("off");
+                            sharedStateCreate.setData({ createTable: "off" });
+                          } else {
+                            setModeCreate("on");
+                            sharedStateCreate.setData({ createTable: "on" });
+                          }
+                        }}
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={6}>
+                      <Checkbox
+                        label="Chỉnh sửa"
+                        checked={modeEdit?.editTable === "on" ? true : false}
+                        classNames={{
+                          label: "text-indigo-700",
+                          input: "text-indigo-700 checked:bg-indigo-700",
+                        }}
+                        onClick={() => {
+                          if (modeEdit?.editTable === "on") {
+                            setModeEdit("off");
+                            sharedStateEdit.setData({ editTable: "off" });
+                          } else {
+                            setModeEdit("on");
+                            sharedStateEdit.setData({ editTable: "on" });
+                          }
+                        }}
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={6}>
+                      <Checkbox
+                        label="Xóa"
+                        checked={
+                          modeDelete?.deleteTable === "on" ? true : false
                         }
-                      }}
-                    />
-                  </Grid.Col>
-                  <Grid.Col span={6}>
-                    <Checkbox
-                      label="Xóa"
-                      checked={modeDelete?.deleteTable === "on" ? true : false}
-                      classNames={{
-                        label: "text-indigo-700",
-                        input: "text-indigo-700 checked:bg-indigo-700",
-                      }}
-                      onClick={() => {
-                        if (modeDelete?.deleteTable === "on") {
-                          setModeDelete("off");
-                          sharedStateDelete.setData({ deleteTable: "off" });
-                        } else {
-                          setModeDelete("on");
-                          sharedStateDelete.setData({ deleteTable: "on" });
-                        }
-                      }}
-                    />
-                  </Grid.Col>
-                </Grid>
-              </ScrollArea>
-            </>
-          ) : (
-            <IconChevronLeft
-              className="text-indigo-700 p-1 hover:bg-indigo-800 hover:text-white cursor-pointer rounded-3xl duration-200"
-              size={24}
-              onClick={() => setIsOpenEdit(true)}
-            />
-          )}
-          <div
-            className="absolute bottom-0 flex justify-center w-full py-2 pr-4"
-            onClick={() =>
-              sharedStateTableList.setData({ tableListMode: "off" })
-            }
-          >
-            <button
+                        classNames={{
+                          label: "text-indigo-700",
+                          input: "text-indigo-700 checked:bg-indigo-700",
+                        }}
+                        onClick={() => {
+                          if (modeDelete?.deleteTable === "on") {
+                            setModeDelete("off");
+                            sharedStateDelete.setData({ deleteTable: "off" });
+                          } else {
+                            setModeDelete("on");
+                            sharedStateDelete.setData({ deleteTable: "on" });
+                          }
+                        }}
+                      />
+                    </Grid.Col>
+                  </Grid>
+                </ScrollArea>
+              </>
+            ) : (
+              <IconChevronLeft
+                className="text-indigo-700 p-1 hover:bg-indigo-800 hover:text-white cursor-pointer rounded-3xl duration-200"
+                size={24}
+                onClick={() => setIsOpenEdit(true)}
+              />
+            )}
+            <div
+              className="absolute bottom-0 flex justify-center w-full py-2 pr-4"
               onClick={() =>
                 sharedStateTableList.setData({ tableListMode: "off" })
               }
-              className={`${
-                isOpenEdit ? "" : "hidden"
-              } bg-indigo-700 text-white px-4 py-2 rounded w-full font-bold transition duration-200 hover:bg-white hover:text-indigo-700 hover:border hover:border-indigo-700 hover:border-2`}
             >
-              Xóa
-            </button>
+              <button
+                onClick={() =>
+                  sharedStateTableList.setData({ tableListMode: "off" })
+                }
+                className={`${
+                  isOpenEdit ? "" : "hidden"
+                } bg-indigo-700 text-white px-4 py-2 rounded w-full font-bold transition duration-200 hover:bg-white hover:text-indigo-700 hover:border hover:border-indigo-700 hover:border-2`}
+              >
+                Xóa
+              </button>
+            </div>
           </div>
-        </div>
+        </ScrollArea>
       </div>
     </ModalsProvider>
   );
