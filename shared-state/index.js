@@ -106,6 +106,18 @@ export const sharedStateBarChart = {
   },
 };
 
+export const sharedStateTypeChart = {
+  data: { type: "bar" },
+  setData(newData) {
+    this.data = { ...this.data, ...newData };
+    window.dispatchEvent(
+      new CustomEvent("sharedStateTypeChart:updated", {
+        detail: this.data,
+      })
+    );
+  },
+};
+
 export const sharedStateDataBarChart = {
   data: { dataKey: "", series: "" },
   setData(newData) {

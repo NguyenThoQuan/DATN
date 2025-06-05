@@ -1,6 +1,6 @@
 import "@mantine/core/styles.css";
 import { createTheme, MantineProvider, Divider, Tooltip } from "@mantine/core";
-import { BarChart } from "@mantine/charts";
+import { AreaChart, BarChart } from "@mantine/charts";
 import {
   IconChevronRight,
   IconChevronLeft,
@@ -14,6 +14,7 @@ import {
   sharedStateBarChart,
   sharedStateDataBarChart,
 } from "../../shared-state";
+import { LineChart } from "recharts";
 
 const theme = createTheme({
   /** Put your mantine theme override here */
@@ -22,6 +23,7 @@ const theme = createTheme({
 export default function Root() {
   const [data, setData] = useState();
   const [dataColumn, setDataColumn] = useState();
+  const [typeChart, setTypeChart] = useState("");
   const [dataKey, setDataKey] = useState("");
   const [series, setSeries] = useState([]);
 
@@ -107,6 +109,24 @@ export default function Root() {
   }, []);
 
   useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setTypeChart(event.detail.type);
+    };
+
+    window.addEventListener(
+      "sharedStateTypeChart:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateTypeChart:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
     if (dataKey?.length > 0 || series?.length > 0) {
       sharedStateDataBarChart.setData({ dataKey: dataKey, series: series });
     }
@@ -122,15 +142,38 @@ export default function Root() {
               : "flex justify-end items-end"
           } gap-2 w-[100%] duration-200 mb-8`}
         >
-          <BarChart
-            h={300}
-            data={data}
-            dataKey={dataKey}
-            series={series}
-            tickLine="x"
-            gridAxis="xy"
-            className="col-span-2"
-          />
+          {typeChart === "bar" ? (
+            <BarChart
+              h={300}
+              data={data}
+              dataKey={dataKey}
+              series={series}
+              tickLine="x"
+              gridAxis="xy"
+              className="col-span-2"
+            />
+          ) : typeChart === "area" ? (
+            <AreaChart
+              h={300}
+              data={data}
+              dataKey={dataKey}
+              series={series}
+              tickLine="x"
+              gridAxis="xy"
+              className="col-span-2"
+            />
+          ) : (
+            <LineChart
+              h={300}
+              data={data}
+              dataKey={dataKey}
+              series={series}
+              tickLine="x"
+              gridAxis="xy"
+              className="col-span-2"
+            />
+          )}
+
           <div
             className={`relative p-2 bg-indigo-50 rounded-lg shadow col-span-1 w-full transition-all duration-300 overflow-hidden ${
               isOpenEdit

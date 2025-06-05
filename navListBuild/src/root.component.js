@@ -20,6 +20,8 @@ import {
   sharedStateDataDesign,
   sharedStateBarChart,
   sharedStateDataBarChart,
+  sharedStateTypeBar,
+  sharedStateTypeChart,
 } from "shared-state";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -34,6 +36,7 @@ export default function Root() {
   const [barChart, setBarChart] = useState();
   const [dataBarChart, setDataBarChart] = useState({ dataKey: "", series: [] });
   const [isLoading, setIsLoading] = useState(false);
+  const [typeChart, setTypeChart] = useState("");
 
   const handleChangeValue = (value, key) => {
     setDataBuild((prevData) => ({ ...prevData, [key]: value }));
@@ -54,7 +57,7 @@ export default function Root() {
     {
       title: "Biểu đồ phân tích",
       icon: <FaChartArea />,
-      subMenu: ["Biểu đồ cột", "Biểu đồ miền", "Biểu đồ tròn", "Biểu đồ đường"],
+      subMenu: ["Biểu đồ cột", "Biểu đồ khu vực", "Biểu đồ đường"],
       value: "chart",
       key: "chart",
     },
@@ -91,6 +94,18 @@ export default function Root() {
     }
     if (module === "Biểu đồ cột") {
       sharedStateBarChart.setData({ barChart: "on" });
+      sharedStateTypeChart.setData({ type: "bar" });
+      setTypeChart("bar");
+    }
+    if (module === "Biểu đồ khu vực") {
+      sharedStateBarChart.setData({ barChart: "on" });
+      sharedStateTypeChart.setData({ type: "area" });
+      setTypeChart("area");
+    }
+    if (module === "Biểu đồ đường") {
+      sharedStateBarChart.setData({ barChart: "on" });
+      sharedStateTypeChart.setData({ type: "line" });
+      setTypeChart("line");
     }
   };
 
@@ -111,6 +126,7 @@ export default function Root() {
         return;
       } else {
         setDataBuild(data[0]);
+        setTypeChart(data[0]?.typeChart);
         sharedStateDataDesign.setData({ dataD: data[0] });
         sharedStateMode.setData({ mode: data[0]?.mode });
         sharedStateTableList.setData({
@@ -121,6 +137,7 @@ export default function Root() {
           dataKey: data[0]?.dataBarChart?.dataKey,
           series: data[0]?.dataBarChart?.series,
         });
+        sharedStateTypeChart.setData({ type: data[0]?.typeChart });
         sharedStateBarChart.setData({ barChart: data[0]?.barChart });
         sharedStateCreate.setData({ createTable: data[0]?.createTable });
         sharedStateEdit.setData({ editTable: data[0]?.editTable });
@@ -151,6 +168,7 @@ export default function Root() {
           dataColumn: dataTableListBuild?.dataColumn || [],
           barChart: barChart,
           dataBarChart: dataBarChart,
+          typeChart: typeChart,
           excel: excel,
         }),
       });
