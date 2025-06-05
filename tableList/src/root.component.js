@@ -49,14 +49,16 @@ export default function Root() {
   const [build, setBuild] = useState(sharedStateTableList || {});
   const [height, setHeight] = useState(0);
   const [data, setData] = useState([]);
-  const [dataColumn, setDataColumn] = useDebouncedState(
+  const [dataColumn, setDataColumn] = useState(
     sharedStateTableListBuild.dataColumn || []
   );
+  console.log(dataColumn);
   const [col, setCol] = useDebouncedState(
     {
       accessorKey: "",
       header: "",
       search: false,
+      size: 200,
     },
     300
   );
@@ -64,7 +66,6 @@ export default function Root() {
     left: [],
     right: [],
   });
-  console.log(columnPining);
   const [isCheckAK, setIsCheckAK] = useState(true);
   const [isOpenEdit, setIsOpenEdit] = useState(true);
   const [isFetch, setIsFetch] = useState(false);
@@ -153,7 +154,7 @@ export default function Root() {
   const handleAddColumn = () => {
     if (col.accessorKey && col.header) {
       setDataColumn((prev) => [...prev, { ...col }]);
-      setCol({ accessorKey: "", header: "", search: false });
+      setCol({ accessorKey: "", header: "", search: false, size: 200 });
     }
   };
 
@@ -392,7 +393,32 @@ export default function Root() {
     };
   }, []);
 
+  const updateModeEdit = () => {
+    if (
+      dataColumn &&
+      dataColumn.filter((item) => item.accessorKey !== "action").length === 0
+    ) {
+      setModeEdit((prev) =>
+        prev?.editTable !== "off" ? { editTable: "off" } : prev
+      );
+    }
+  };
+
+  const updateModeDelete = () => {
+    if (
+      dataColumn &&
+      dataColumn.filter((item) => item.accessorKey !== "action").length === 0
+    ) {
+      setModeDelete((prev) =>
+        prev?.deleteTable !== "off" ? { deleteTable: "off" } : prev
+      );
+    }
+  };
+
   useEffect(() => {
+    updateModeEdit();
+    updateModeDelete();
+
     sharedStateTableListBuild.setData({ dataColumn: dataColumn });
 
     const newSearch = { keySearch: search.keySearch };
@@ -482,7 +508,13 @@ export default function Root() {
         <Flex gap={"md"} justify={"flex-end"} w={"20%"}>
           <Button
             leftIcon={<IconPlus size={"15px"} />}
-            className={`${modeCreate?.createTable === "on" ? "" : "hidden"}`}
+            className={`${
+              modeCreate?.createTable === "on" &&
+              dataColumn?.filter((item) => item.accessorKey !== "action")
+                ?.length > 0
+                ? ""
+                : "hidden"
+            }`}
             onClick={() => modalCreate(dataColumn)}
           >
             Thêm mới
@@ -747,7 +779,12 @@ export default function Root() {
                       <Checkbox
                         label="Thêm mới"
                         checked={
-                          modeCreate?.createTable === "on" ? true : false
+                          modeCreate?.createTable === "on" &&
+                          dataColumn?.filter(
+                            (item) => item.accessorKey !== "action"
+                          )?.length > 0
+                            ? true
+                            : false
                         }
                         classNames={{
                           label: "text-indigo-700",
@@ -762,6 +799,11 @@ export default function Root() {
                             sharedStateCreate.setData({ createTable: "on" });
                           }
                         }}
+                        disabled={
+                          dataColumn?.filter(
+                            (item) => item.accessorKey !== "action"
+                          )?.length === 0
+                        }
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -781,6 +823,11 @@ export default function Root() {
                             sharedStateEdit.setData({ editTable: "on" });
                           }
                         }}
+                        disabled={
+                          dataColumn?.filter(
+                            (item) => item.accessorKey !== "action"
+                          )?.length === 0
+                        }
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -802,6 +849,11 @@ export default function Root() {
                             sharedStateDelete.setData({ deleteTable: "on" });
                           }
                         }}
+                        disabled={
+                          dataColumn?.filter(
+                            (item) => item.accessorKey !== "action"
+                          )?.length === 0
+                        }
                       />
                     </Grid.Col>
                   </Grid>
