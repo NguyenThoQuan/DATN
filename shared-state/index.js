@@ -1,3 +1,13 @@
+export const sharedStateDataDesign = {
+  data: { dataD: [] },
+  setData(newData) {
+    this.data = { ...this.data, ...newData };
+    window.dispatchEvent(
+      new CustomEvent("sharedStateDataDesign:updated", { detail: this.data })
+    );
+  },
+};
+
 export const sharedStateMode = {
   data: { mode: "" },
   setData(newData) {

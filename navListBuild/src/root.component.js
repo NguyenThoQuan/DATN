@@ -17,6 +17,7 @@ import {
   sharedStateEdit,
   sharedStateDelete,
   sharedStateExcel,
+  sharedStateDataDesign,
 } from "shared-state";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -103,6 +104,7 @@ export default function Root() {
         return;
       } else {
         setDataBuild(data[0]);
+        sharedStateDataDesign.setData({ dataD: data[0] });
         sharedStateMode.setData({ mode: data[0]?.mode });
         sharedStateTableList.setData({
           tableListMode: data[0]?.tableList,
@@ -291,10 +293,14 @@ export default function Root() {
       <Toaster />
       <div
         className={`${
-          dataBuild?.createById &&
-          dataBuild?.createById !==
-            JSON.parse(localStorage.getItem("userLogin")).id &&
-          dataBuild.mode === "user"
+          (dataBuild?.createById &&
+            dataBuild?.createById !==
+              JSON.parse(localStorage.getItem("userLogin")).id &&
+            dataBuild.mode === "user") ||
+          !dataBuild?.collab?.some(
+            (item) =>
+              item.id === JSON.parse(localStorage.getItem("userLogin")).id
+          )
             ? "hidden"
             : ""
         } w-full flex relative`}

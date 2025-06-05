@@ -20,8 +20,13 @@ export default function Root() {
   const [moduleManager, setModuleManager] = useState();
   const [dataUser, setDataUser] = useState([]);
   const [listUserAdd, setListUserAdd] = useState([]);
+  const [listUser, setListUser] = useState([]);
   const [search, setSearch] = useState("");
   const [searchUser, setSearchUser] = useDebouncedState("", 300);
+
+  const handleDeleteListUser = (email) => {
+    setListUser((prev) => prev.filter((item) => item.email !== email));
+  };
 
   const handleDeleteListUserAdd = (email) => {
     setListUserAdd((prev) => prev.filter((item) => item.email !== email));
@@ -104,7 +109,37 @@ export default function Root() {
         return;
       } else {
         setIsLoading(false);
-        toast.success("Hoàn tất thêm người quản lý !");
+        toast.success("Hoàn tất chia sẻ tùy chỉnh !");
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addUser = async () => {
+    setIsLoading(true);
+    try {
+      const url = `http://localhost:3000/api/build/${moduleManager?.id}`;
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          staff: listUser,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Có lỗi xảy ra ở máy chủ!");
+        return;
+      } else {
+        setIsLoading(false);
+        toast.success("Hoàn tất thêm người dùng !");
       }
     } catch (error) {
       console.error("Lỗi:", error);
@@ -151,6 +186,7 @@ export default function Root() {
                   setActiveTab(tab);
                 }}
               >
+                {tab === "add" && "Thêm người dùng"}
                 {tab === "moduleManager" && "Quản trị hệ thống"}
                 {tab === "decentralization" && "Phân quyền"}
               </li>
@@ -226,20 +262,119 @@ export default function Root() {
                       labelPosition="center"
                       className="text-indigo-700 font-bold"
                     />
-                    {["addManager", "decentralization"].map((item, index) => (
-                      <div
-                        key={index}
-                        className="bg-white text-indigo-700 border border-indigo-700 hover:bg-indigo-700 hover:text-white hover:border-white cursor-pointer text-center shadow-md p-1 rounded-md duration-200"
-                        onClick={() => setActiveFunc(item)}
-                      >
-                        <span className="font-bold truncate text-sm">
-                          {item === "addManager" && "Chia sẻ tùy chỉnh"}
-                          {item === "decentralization" && "Phân quyền"}
-                        </span>
-                      </div>
-                    ))}
+                    {["addManager", "add", "decentralization"].map(
+                      (item, index) => (
+                        <div
+                          key={index}
+                          className="bg-white text-indigo-700 border border-indigo-700 hover:bg-indigo-700 hover:text-white hover:border-white cursor-pointer text-center shadow-md p-1 rounded-md duration-200"
+                          onClick={() => setActiveFunc(item)}
+                        >
+                          <span className="font-bold truncate text-sm">
+                            {item === "addManager" && "Chia sẻ tùy chỉnh"}
+                            {item === "add" && "Thêm người dùng"}
+                            {item === "decentralization" && "Phân quyền"}
+                          </span>
+                        </div>
+                      )
+                    )}
                   </div>
                   <div className="relative w-[80%] border border-indigo-700 shadow-md p-2 rounded-lg duration-200">
+                    {activeFunc === "add" && (
+                      <>
+                        <div className="flex items-center rounded-[10px] bg-indigo-100 p-2 hover:bg-indigo-200 transition-colors">
+                          <Menu trigger="hover" closeDelay={400} width={500}>
+                            <Menu.Target>
+                              <input
+                                type="text"
+                                defaultValue={searchUser}
+                                onChange={(e) =>
+                                  setSearchUser(e.currentTarget.value)
+                                }
+                                placeholder="Nhập email người dùng"
+                                className="w-full p-1 text-sm text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              />
+                            </Menu.Target>
+                            <Menu.Dropdown className="w-full">
+                              {searchUser.length < 3 ? (
+                                <Menu.Item className="text-center">
+                                  <Text className="text-indigo-700">
+                                    Vui lòng nhập tối thiểu 3 kí tự
+                                  </Text>
+                                </Menu.Item>
+                              ) : searchUser.length >= 3 &&
+                                dataUser.length > 0 ? (
+                                dataUser.map((item, index) => (
+                                  <Menu.Item
+                                    key={index}
+                                    className="text-indigo-700"
+                                    onClick={() =>
+                                      setListUser((prev) => [
+                                        ...prev,
+                                        {
+                                          id: item.id,
+                                          name: item.fullName,
+                                          email: item.email,
+                                        },
+                                      ])
+                                    }
+                                  >
+                                    {item.fullName} - {item.email}
+                                  </Menu.Item>
+                                ))
+                              ) : searchUser.length >= 3 &&
+                                dataUser.length === 0 ? (
+                                <Menu.Item className="text-indigo-700 text-center">
+                                  Không tìm thấy người dùng này !
+                                </Menu.Item>
+                              ) : (
+                                <></>
+                              )}
+                            </Menu.Dropdown>
+                          </Menu>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full mt-2">
+                          {listUser &&
+                            listUser.length > 0 &&
+                            listUser.map((item, index) => (
+                              <div
+                                className="flex items-center justify-between border border-indigo-700 bg-white p-2 rounded"
+                                key={index}
+                              >
+                                <div>
+                                  <UserCircleIcon className="h-8 w-8 text-indigo-700 mr-2" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-indigo-700 font-semibold text-sm">
+                                    {item.name}
+                                  </span>
+                                  <span className="text-indigo-700 text-xs">
+                                    {item.email}
+                                  </span>
+                                </div>
+                                <div
+                                  className="cursor-pointer"
+                                  onClick={() =>
+                                    handleDeleteListUser(item.email)
+                                  }
+                                >
+                                  <XMarkIcon className="h-5 w-5 text-indigo-700 mr-2" />
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                        <div className="absolute bottom-0 flex justify-center w-full p-2">
+                          <button
+                            className={`${
+                              isLoading ? "cursor-not-allowed" : ""
+                            } bg-white text-indigo-700 py-2 mr-4 rounded border border-indigo-700 w-full font-bold transition duration-200 hover:bg-indigo-700 hover:text-white hover:border hover:border-white`}
+                            disabled={isLoading}
+                            onClick={() => addUser()}
+                          >
+                            {isLoading ? "Đang lưu ..." : "Lưu"}
+                          </button>
+                        </div>
+                      </>
+                    )}
                     {activeFunc === "addManager" && (
                       <>
                         <div className="flex items-center rounded-[10px] bg-indigo-100 p-2 hover:bg-indigo-200 transition-colors">

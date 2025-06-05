@@ -23,7 +23,7 @@ export default function Root() {
   const [isLoading, setIsLoading] = useState(false);
   const [listModule, setListModule] = useState();
   const [listModuleCollab, setListModuleCollab] = useState();
-  console.log(listModuleCollab);
+  const [listModuleStaff, setListModuleStaff] = useState();
   const [indexItem, setIndexItem] = useState();
   const [typeAction, setTypeAction] = useState();
   const [isClose, setIsClose] = useState(true);
@@ -78,6 +78,34 @@ export default function Root() {
         toast.error("Có lỗi xảy ra ở máy chủ !");
       } else {
         setListModuleCollab(data?.data);
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
+  };
+
+  const getModuleStaff = async () => {
+    const idUser = JSON.parse(localStorage.getItem("userLogin"))?.id;
+    let url = `http://localhost:3000/api/build/staff/${idUser}`;
+
+    if (searchCollab.length > 0) {
+      url += `?keySearch=${searchCollab}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Có lỗi xảy ra ở máy chủ !");
+      } else {
+        setListModuleStaff(data?.data);
       }
     } catch (error) {
       console.error("Lỗi:", error);
@@ -200,6 +228,7 @@ export default function Root() {
   useEffect(() => {
     getModule();
     getModuleCollab();
+    getModuleStaff();
   }, []);
 
   return (
@@ -499,35 +528,59 @@ export default function Root() {
             </button>
           </div>
         </div>
-        {listModuleCollab && listModuleCollab.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xs:grid-cols-1">
-            {listModuleCollab.map((item, index) => (
-              <div
-                key={index}
-                className={
-                  "group flex justify-between items-center shadow-md p-4 rounded-md duration-200 bg-indigo-700 text-white hover:bg-white hover:text-indigo-700 cursor-pointer"
-                }
-                onClick={() => {
-                  window.location.href = `/build?id=${encodeURIComponent(
-                    item.id
-                  )}`;
-                }}
-              >
-                {item.mode === "edit" ? (
-                  <WrenchScrewdriverIcon className="w-6 h-6" />
-                ) : item.mode === "user" ? (
+        {(listModuleCollab && listModuleCollab.length > 0) ||
+        (listModuleStaff && listModuleStaff.length > 0) ? (
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xs:grid-cols-1">
+              {listModuleCollab.map((item, index) => (
+                <div
+                  key={index}
+                  className={
+                    "group flex justify-between items-center shadow-md p-4 rounded-md duration-200 bg-indigo-700 text-white hover:bg-white hover:text-indigo-700 cursor-pointer"
+                  }
+                  onClick={() => {
+                    window.location.href = `/build?id=${encodeURIComponent(
+                      item.id
+                    )}`;
+                  }}
+                >
+                  {item.mode === "edit" ? (
+                    <WrenchScrewdriverIcon className="w-6 h-6" />
+                  ) : item.mode === "user" ? (
+                    <UserCircleIcon className="w-6 h-6" />
+                  ) : item.mode === "inactive" ? (
+                    <NoSymbolIcon className="w-6 h-6" />
+                  ) : (
+                    <></>
+                  )}
+                  <span className="uppercase font-bold truncate">
+                    {item.name}
+                  </span>
+                  <div></div>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xs:grid-cols-1">
+              {listModuleStaff?.map((item, index) => (
+                <div
+                  key={index}
+                  className={
+                    "group flex justify-between items-center shadow-md p-4 rounded-md duration-200 bg-indigo-700 text-white hover:bg-white hover:text-indigo-700 cursor-pointer"
+                  }
+                  onClick={() => {
+                    window.location.href = `/build?id=${encodeURIComponent(
+                      item.id
+                    )}`;
+                  }}
+                >
                   <UserCircleIcon className="w-6 h-6" />
-                ) : item.mode === "inactive" ? (
-                  <NoSymbolIcon className="w-6 h-6" />
-                ) : (
-                  <></>
-                )}
-                <span className="uppercase font-bold truncate">
-                  {item.name}
-                </span>
-                <div></div>
-              </div>
-            ))}
+                  <span className="uppercase font-bold truncate">
+                    {item.name}
+                  </span>
+                  <div></div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="flex justify-center">
