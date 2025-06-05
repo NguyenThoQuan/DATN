@@ -665,7 +665,7 @@ export default function Root() {
           } ${mode === "user" ? "hidden" : ""}`}
         >
           {isOpenEdit ? (
-            <div className="overflow-auto">
+            <div className="overflow-auto max-h-[calc(100vh-140px)] scrollbar-custom">
               <div className="flex justify-between items-center w-full">
                 <IconChevronRight
                   className="text-indigo-700 p-1 hover:bg-indigo-800 hover:text-white cursor-pointer rounded-3xl duration-200 hidden lg:block"
