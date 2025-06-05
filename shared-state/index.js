@@ -71,3 +71,15 @@ export const sharedStateColumnPining = {
     );
   },
 };
+
+export const sharedStateExcel = {
+  data: { excel: "off" },
+  setData(newData) {
+    this.data = { ...this.data, ...newData };
+    window.dispatchEvent(
+      new CustomEvent("sharedStateExcel:updated", {
+        detail: this.data,
+      })
+    );
+  },
+};

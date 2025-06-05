@@ -16,6 +16,7 @@ import {
   sharedStateCreate,
   sharedStateEdit,
   sharedStateDelete,
+  sharedStateExcel,
 } from "shared-state";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -26,6 +27,7 @@ export default function Root() {
   const [modeCreate, setModeCreate] = useState();
   const [modeEdit, setModeEdit] = useState();
   const [modeDelete, setModeDelete] = useState();
+  const [excel, setExcel] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChangeValue = (value, key) => {
@@ -79,6 +81,9 @@ export default function Root() {
     if (module === "Xóa") {
       sharedStateDelete.setData({ deleteTable: "on" });
     }
+    if (module === "Xuất Excel") {
+      sharedStateExcel.setData({ excel: "on" });
+    }
   };
 
   const getModule = async (id) => {
@@ -107,6 +112,7 @@ export default function Root() {
         sharedStateEdit.setData({ editTable: data[0]?.editTable });
         sharedStateDelete.setData({ deleteTable: data[0]?.deleteTable });
         sharedStateTableListBuild.setData({ dataColumn: data[0]?.dataColumn });
+        sharedStateExcel.setData({ excel: data[0]?.excel });
       }
     } catch (error) {
       console.error("Lỗi:", error);
@@ -129,6 +135,7 @@ export default function Root() {
           editTable: modeEdit?.editTable,
           deleteTable: modeDelete?.deleteTable,
           dataColumn: dataTableListBuild?.dataColumn || [],
+          excel: excel,
         }),
       });
 
@@ -256,6 +263,24 @@ export default function Root() {
     return () => {
       window.removeEventListener(
         "sharedStateDelete:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setExcel(event.detail?.excel || []);
+    };
+
+    window.addEventListener(
+      "sharedStateExcel:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateExcel:updated",
         handleSharedStateUpdate
       );
     };

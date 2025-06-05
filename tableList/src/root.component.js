@@ -5,6 +5,7 @@ import {
   sharedStateCreate,
   sharedStateEdit,
   sharedStateDelete,
+  sharedStateExcel,
 } from "shared-state";
 import "./index.css";
 import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
@@ -15,7 +16,9 @@ import {
   IconSearch,
   IconPlus,
   IconEdit,
-  IconPin,
+  IconCopy,
+  IconCopyOff,
+  IconDownload,
 } from "@tabler/icons-react";
 import {
   Divider,
@@ -28,7 +31,7 @@ import {
   Checkbox,
   Tooltip,
   ActionIcon,
-  Menu,
+  Box,
 } from "@mantine/core";
 import toast, { Toaster } from "react-hot-toast";
 import "regenerator-runtime/runtime";
@@ -38,6 +41,7 @@ import { ModalsProvider } from "@mantine/modals";
 import ModalCreate from "./modalCreate.component";
 import ModalDelete from "./modalDelete.component";
 import ModalEdit from "./modalEdit.component";
+import { mkConfig, generateCsv, download } from "export-to-csv";
 
 export default function Root() {
   const headerRef = React.useRef(null);
@@ -46,6 +50,7 @@ export default function Root() {
   const [modeCreate, setModeCreate] = useState();
   const [modeEdit, setModeEdit] = useState();
   const [modeDelete, setModeDelete] = useState();
+  const [excel, setExcel] = useState();
   const [build, setBuild] = useState(sharedStateTableList || {});
   const [height, setHeight] = useState(0);
   const [data, setData] = useState([]);
@@ -56,6 +61,7 @@ export default function Root() {
     accessorKey: "",
     header: "",
     search: false,
+    copy: false,
     size: "200",
   });
   const [columnPining, setColumnPining] = useState({
@@ -73,12 +79,30 @@ export default function Root() {
     300
   );
 
+  const csvConfig = mkConfig({
+    fieldSeparator: ",",
+    decimalSeparator: ".",
+    useKeysAsHeaders: true,
+  });
+
+  const handleExportRows = (rows) => {
+    const rowData = rows.map((row) => row.original);
+    const csv = generateCsv(csvConfig)(rowData);
+    download(csvConfig)(csv);
+  };
+
+  const handleExportData = () => {
+    const csv = generateCsv(csvConfig)(data);
+    download(csvConfig)(csv);
+  };
+
   const columns = useMemo(() => {
     if (!dataColumn || !Array.isArray(dataColumn)) return [];
 
     return dataColumn.map((col) => ({
       accessorKey: col.accessorKey || "defaultKey",
       header: col.header || "Default Header",
+      enableClickToCopy: col.copy,
       size: Number(col.size),
       ...(col.accessorKey === "action" && {
         Cell: ({ row }) => (
@@ -157,8 +181,14 @@ export default function Root() {
 
   const handleUpdateColumn = (oldAccessorKey, updatedFields, field) => {
     if (
-      (!updatedFields.accessorKey && field !== "search" && field !== "size") ||
-      (!updatedFields.header && field !== "search" && field !== "size")
+      (!updatedFields.accessorKey &&
+        field !== "search" &&
+        field !== "size" &&
+        field !== "copy") ||
+      (!updatedFields.header &&
+        field !== "search" &&
+        field !== "size" &&
+        field !== "copy")
     )
       return;
 
@@ -168,7 +198,12 @@ export default function Root() {
         item.accessorKey !== oldAccessorKey
     );
 
-    if (isDuplicate && field !== "search" && field !== "size") {
+    if (
+      isDuplicate &&
+      field !== "search" &&
+      field !== "size" &&
+      field !== "copy"
+    ) {
       toast.error(
         "Khóa truy cập bạn vừa nhập đã tồn tại, vui lòng chọn khóa khác!"
       );
@@ -253,13 +288,15 @@ export default function Root() {
     });
   };
 
-  const modalDelete = () => {
+  const modalDelete = (idData) => {
     modals.openConfirmModal({
       title: <Text className="font-bold">Xóa dữ liệu</Text>,
       size: "auto",
       centered: true,
       zIndex: 1000,
-      children: <ModalDelete idBuild={id} setIsFetch={setIsFetch} />,
+      children: (
+        <ModalDelete idBuild={id} idData={idData} setIsFetch={setIsFetch} />
+      ),
       confirmProps: { display: "none" },
       cancelProps: { display: "none" },
     });
@@ -276,7 +313,7 @@ export default function Root() {
     const handleResize = () => {
       // 190 là chiều cao của phần phân trang
       // headerHeight là chiều cao của phần header
-      setHeight(window.innerHeight - (187.5 + headerHeight));
+      setHeight(window.innerHeight - (217.5 + headerHeight));
     };
 
     handleResize(); // Set initial height
@@ -390,6 +427,24 @@ export default function Root() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleSharedStateUpdate = (event) => {
+      setExcel(event.detail?.excel || []);
+    };
+
+    window.addEventListener(
+      "sharedStateExcel:updated",
+      handleSharedStateUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "sharedStateExcel:updated",
+        handleSharedStateUpdate
+      );
+    };
+  }, []);
+
   const updateModeEdit = () => {
     if (
       dataColumn &&
@@ -412,9 +467,19 @@ export default function Root() {
     }
   };
 
+  const updateExcel = () => {
+    if (
+      dataColumn &&
+      dataColumn.filter((item) => item.accessorKey !== "action").length === 0
+    ) {
+      setExcel("off");
+    }
+  };
+
   useEffect(() => {
     updateModeEdit();
     updateModeDelete();
+    updateExcel();
 
     sharedStateTableListBuild.setData({ dataColumn: dataColumn });
 
@@ -454,70 +519,106 @@ export default function Root() {
   }, [modeEdit, modeDelete]);
 
   const table = useMantineReactTable({
-    columns,
+    columns: columns,
     data: data || [],
-    state: {
-      columnPining,
-    },
-    onColumnPinningChange: setColumnPining,
+    enableRowSelection: true,
     renderTopToolbarCustomActions: () => (
-      <Flex justify={"space-between"} w={"100%"}>
-        <Grid grow w={"80%"}>
-          {dataColumn &&
-            dataColumn?.length > 0 &&
-            dataColumn
-              ?.filter(
-                (item) =>
-                  item.search !== false && item?.accessorKey !== "action"
-              )
-              ?.map((item, index) => (
-                <Grid.Col span={3} key={index}>
-                  <TextInput
-                    placeholder={item.header}
-                    defaultValue={search[item.accessorKey]}
-                    onChange={(e) => {
-                      handleChangeSearch(
-                        item.accessorKey,
-                        e.currentTarget.value
-                      );
-                    }}
-                  />
-                </Grid.Col>
-              ))}
-          <Grid.Col span={3}>
-            <TextInput
-              placeholder="Nhập từ khóa"
-              defaultValue={search.keySearch}
-              onChange={(e) =>
-                handleChangeSearch("keySearch", e.currentTarget.value)
-              }
-            />
-          </Grid.Col>
-          <Grid.Col span={3}>
-            <Button
-              leftIcon={<IconSearch size={"15px"} />}
-              onClick={() => getData()}
-            >
-              Tìm kiếm
-            </Button>
-          </Grid.Col>
-        </Grid>
-        <Flex gap={"md"} justify={"flex-end"} w={"20%"}>
+      <div className="flex flex-col w-full gap-2">
+        <Flex
+          w={"100%"}
+          justify={"start"}
+          gap={"md"}
+          className={`${excel === "on" ? "" : "hidden"}`}
+        >
           <Button
-            leftIcon={<IconPlus size={"15px"} />}
-            className={`${
-              modeCreate?.createTable === "on" &&
-              dataColumn?.filter((item) => item.accessorKey !== "action")
-                ?.length > 0
-                ? ""
-                : "hidden"
-            }`}
-            onClick={() => modalCreate(dataColumn)}
+            color="lightblue"
+            //export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
+            onClick={handleExportData}
+            leftIcon={<IconDownload />}
+            variant="filled"
           >
-            Thêm mới
+            Xuất tất cả dữ liệu
+          </Button>
+          <Button
+            disabled={table.getRowModel().rows.length === 0}
+            //export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
+            onClick={() => handleExportRows(table.getRowModel().rows)}
+            leftIcon={<IconDownload />}
+            variant="filled"
+          >
+            Xuất dữ liệu trong trang
+          </Button>
+          <Button
+            disabled={
+              !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+            }
+            //only export selected rows
+            onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
+            leftIcon={<IconDownload />}
+            variant="filled"
+          >
+            Xuất dữ liệu được chọn
           </Button>
         </Flex>
-      </Flex>
+        <Divider className={`${excel === "on" ? "" : "hidden"}`} />
+        <Flex justify={"space-between"} w={"100%"}>
+          <Grid grow w={"80%"}>
+            {dataColumn &&
+              dataColumn?.length > 0 &&
+              dataColumn
+                ?.filter(
+                  (item) =>
+                    item.search !== false && item?.accessorKey !== "action"
+                )
+                ?.map((item, index) => (
+                  <Grid.Col span={3} key={index}>
+                    <TextInput
+                      placeholder={item.header}
+                      defaultValue={search[item.accessorKey]}
+                      onChange={(e) => {
+                        handleChangeSearch(
+                          item.accessorKey,
+                          e.currentTarget.value
+                        );
+                      }}
+                    />
+                  </Grid.Col>
+                ))}
+            <Grid.Col span={3}>
+              <TextInput
+                placeholder="Nhập từ khóa"
+                defaultValue={search.keySearch}
+                onChange={(e) =>
+                  handleChangeSearch("keySearch", e.currentTarget.value)
+                }
+              />
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <Button
+                leftIcon={<IconSearch size={"15px"} />}
+                onClick={() => getData()}
+              >
+                Tìm kiếm
+              </Button>
+            </Grid.Col>
+          </Grid>
+          <Flex gap={"md"} justify={"flex-end"} w={"20%"}>
+            <Button
+              leftIcon={<IconPlus size={"15px"} />}
+              className={`${
+                modeCreate?.createTable === "on" &&
+                dataColumn?.filter((item) => item.accessorKey !== "action")
+                  ?.length > 0
+                  ? ""
+                  : "hidden"
+              }`}
+              onClick={() => modalCreate(dataColumn)}
+            >
+              Thêm mới
+            </Button>
+          </Flex>
+        </Flex>
+      </div>
     ),
     renderToolbarInternalActions: () => <></>,
     initialState: {
@@ -605,11 +706,24 @@ export default function Root() {
                       labelPosition="center"
                       className="text-indigo-700 font-bold"
                     />
-                    {dataColumn && dataColumn.length > 0 ? (
+                    {dataColumn &&
+                    dataColumn?.filter((item) => item.accessorKey !== "action")
+                      ?.length > 0 ? (
                       dataColumn
                         .filter((item) => item.accessorKey !== "action")
                         .map((item, index) => (
-                          <div className="flex flex-col gap-2" key={index}>
+                          <div
+                            className={`flex flex-col gap-2 ${
+                              index ===
+                              dataColumn?.filter(
+                                (item) => item.accessorKey !== "action"
+                              )?.length -
+                                1
+                                ? ""
+                                : "border-b-2"
+                            } pb-2`}
+                            key={index}
+                          >
                             <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 items-start sm:items-center justify-between mt-1">
                               <label className="flex flex-col gap-1 w-full sm:flex-[3] sm:w-auto">
                                 <span className="text-indigo-700 font-semibold text-sm">
@@ -654,7 +768,7 @@ export default function Root() {
                                 />
                               </label>
                               <div className="flex gap-1 w-full sm:flex-[1] sm:w-auto">
-                                <Tooltip label="Ghim">
+                                {/* <Tooltip label="Ghim">
                                   <Menu>
                                     <Menu.Target>
                                       <IconPin className="text-indigo-700 p-[1px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6" />
@@ -702,6 +816,35 @@ export default function Root() {
                                       </Menu.Item>
                                     </Menu.Dropdown>
                                   </Menu>
+                                </Tooltip> */}
+                                <Tooltip label="Copy">
+                                  {item.copy ? (
+                                    <IconCopy
+                                      onClick={() =>
+                                        handleUpdateColumn(
+                                          item.accessorKey,
+                                          {
+                                            copy: false,
+                                          },
+                                          "copy"
+                                        )
+                                      }
+                                      className="text-indigo-700 p-[1px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6"
+                                    />
+                                  ) : (
+                                    <IconCopyOff
+                                      onClick={() =>
+                                        handleUpdateColumn(
+                                          item.accessorKey,
+                                          {
+                                            copy: true,
+                                          },
+                                          "copy"
+                                        )
+                                      }
+                                      className="text-indigo-700 p-[1px] hover:bg-indigo-800 hover:text-white cursor-pointer rounded-lg duration-200 mt-6"
+                                    />
+                                  )}
                                 </Tooltip>
                               </div>
                               <div
@@ -754,7 +897,9 @@ export default function Root() {
                     className="text-indigo-700 font-bold"
                   />
                   <Grid>
-                    {dataColumn && dataColumn.length > 0 ? (
+                    {dataColumn &&
+                    dataColumn?.filter((item) => item.accessorKey !== "action")
+                      ?.length > 0 ? (
                       dataColumn
                         .filter((item) => item.accessorKey !== "action")
                         .map((item, index) => (
@@ -865,6 +1010,30 @@ export default function Root() {
                           } else {
                             setModeDelete("on");
                             sharedStateDelete.setData({ deleteTable: "on" });
+                          }
+                        }}
+                        disabled={
+                          dataColumn?.filter(
+                            (item) => item.accessorKey !== "action"
+                          )?.length === 0
+                        }
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={6}>
+                      <Checkbox
+                        label="Xuất excel"
+                        checked={excel === "on" ? true : false}
+                        classNames={{
+                          label: "text-indigo-700",
+                          input: "text-indigo-700 checked:bg-indigo-700",
+                        }}
+                        onClick={() => {
+                          if (excel === "on") {
+                            setExcel("off");
+                            sharedStateExcel.setData({ excel: "off" });
+                          } else {
+                            setExcel("on");
+                            sharedStateExcel.setData({ excel: "on" });
                           }
                         }}
                         disabled={
