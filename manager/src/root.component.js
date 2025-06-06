@@ -27,6 +27,7 @@ export default function Root() {
   const [indexItem, setIndexItem] = useState();
   const [typeAction, setTypeAction] = useState();
   const [isClose, setIsClose] = useState(true);
+  const [moduleCopy, setModuleCopy] = useState(null);
 
   const getModule = async () => {
     const idUser = JSON.parse(localStorage.getItem("userLogin"))?.id;
@@ -225,6 +226,42 @@ export default function Root() {
     }
   };
 
+  const handleSubmitCopy = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const idUser = JSON.parse(localStorage.getItem("userLogin"))?.id;
+
+      if (!token) {
+        toast.error("Vui lòng đăng nhập để thực hiện hành động này!");
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch("http://localhost:3000/api/build", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": `${idUser}`,
+        },
+        body: JSON.stringify({ ...moduleCopy, name: nameModule, mode: "edit" }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Có lỗi xảy ra ở máy chủ!");
+      } else {
+        window.location.href = `/build?id=${encodeURIComponent(data?.id)}`;
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+      toast.error("Có lỗi xảy ra khi gửi yêu cầu!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     getModule();
     getModuleCollab();
@@ -242,18 +279,64 @@ export default function Root() {
           <input
             type="text"
             value={nameModule}
-            onChange={(e) => setNameModule(e.currentTarget.value)}
+            onChange={(e) => {
+              setNameModule(e.currentTarget.value);
+            }}
             placeholder="Nhập tên hệ thống quản lý"
-            className="p-2 col-span-1 lg:col-span-5 text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="p-2 col-span-1 lg:col-span-4 text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+          <select
+            className="col-span-1 p-2 w-full text-indigo-700 bg-white border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            onChange={(e) => {
+              const selectedId = e.target.value;
+              const selectedModule = listModule.find(
+                (item) => item.id == selectedId
+              );
+
+              if (selectedModule) {
+                // Lọc bỏ các trường không mong muốn
+                const {
+                  id,
+                  createdAt,
+                  createById,
+                  createByName,
+                  dataTable,
+                  collab,
+                  staff,
+                  ...filteredModule
+                } = selectedModule;
+
+                setModuleCopy(filteredModule);
+                setNameModule(selectedModule.name);
+              } else {
+                setModuleCopy(null);
+                setNameModule("");
+              }
+            }}
+          >
+            <option value="">Chọn một module có sẵn</option>
+            {listModule &&
+              listModule.length > 0 &&
+              listModule.map((item) => (
+                <option value={item.id} key={item.id}>
+                  {item.name}
+                </option>
+              ))}
+          </select>
           <button
-            className={`flex items-center justify-center p-2 rounded-md transition-colors ${
+            className={`col-span-1 flex items-center justify-center p-2 rounded-md transition-colors ${
               nameModule.length === 0 || isLoading
                 ? "bg-gray-400 text-gray-200 cursor-not-allowed"
                 : "bg-indigo-700 text-white hover:bg-indigo-800"
             }`}
             disabled={nameModule.length === 0 || isLoading}
-            onClick={() => handleSubmit()}
+            onClick={() => {
+              if (moduleCopy !== null) {
+                handleSubmitCopy();
+              } else {
+                handleSubmit();
+              }
+            }}
           >
             {!isLoading ? (
               <>
